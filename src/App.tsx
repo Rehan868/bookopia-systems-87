@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { OwnerLayout } from "@/components/layout/OwnerLayout";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
 import BookingView from "./pages/BookingView";
@@ -39,6 +40,27 @@ import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
+// Protected route component that redirects to login if not authenticated
+const ProtectedRoute = ({ 
+  children,
+  requiredRole = ["admin", "staff", "manager"],
+}: { 
+  children: JSX.Element,
+  requiredRole?: string[]
+}) => {
+  const { isAuthenticated, user } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (user && !requiredRole.includes(user.role)) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};
+
 const MainLayout = () => {
   return (
     <div className="flex min-h-screen">
@@ -57,58 +79,84 @@ const MainLayout = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/owner/login" element={<OwnerLogin />} />
-          
-          {/* Staff routes */}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="bookings" element={<Bookings />} />
-            <Route path="bookings/:id" element={<BookingView />} />
-            <Route path="bookings/new" element={<BookingAdd />} />
-            <Route path="bookings/edit/:id" element={<BookingEdit />} />
-            <Route path="availability" element={<Availability />} />
-            <Route path="rooms" element={<Rooms />} />
-            <Route path="rooms/view/:id" element={<RoomView />} />
-            <Route path="rooms/add" element={<RoomAdd />} />
-            <Route path="rooms/edit/:id" element={<RoomEdit />} />
-            <Route path="expenses" element={<Expenses />} />
-            <Route path="expenses/add" element={<ExpenseAdd />} />
-            <Route path="expenses/:id" element={<BookingView />} />
-            <Route path="expenses/edit/:id" element={<BookingEdit />} />
-            <Route path="cleaning" element={<CleaningStatus />} />
-            <Route path="users" element={<Users />} />
-            <Route path="users/add" element={<UserAdd />} />
-            <Route path="users/:id" element={<BookingView />} />
-            <Route path="users/edit/:id" element={<BookingEdit />} />
-            <Route path="owners" element={<Owners />} />
-            <Route path="owners/add" element={<OwnerAdd />} />
-            <Route path="owners/:id" element={<BookingView />} />
-            <Route path="owners/edit/:id" element={<BookingEdit />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="audit" element={<AuditLogs />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          
-          {/* Owner routes */}
-          <Route path="/owner" element={<OwnerLayout />}>
-            <Route path="dashboard" element={<OwnerDashboard />} />
-            <Route path="bookings" element={<OwnerBookings />} />
-            <Route path="availability" element={<OwnerAvailability />} />
-            <Route path="cleaning" element={<OwnerCleaningStatus />} />
-            <Route path="reports" element={<OwnerReports />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/owner/login" element={<OwnerLogin />} />
+            
+            {/* Staff routes */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="bookings" element={<Bookings />} />
+              <Route path="bookings/:id" element={<BookingView />} />
+              <Route path="bookings/new" element={<BookingAdd />} />
+              <Route path="bookings/edit/:id" element={<BookingEdit />} />
+              <Route path="availability" element={<Availability />} />
+              <Route path="rooms" element={<Rooms />} />
+              <Route path="rooms/view/:id" element={<RoomView />} />
+              <Route path="rooms/add" element={<RoomAdd />} />
+              <Route path="rooms/edit/:id" element={<RoomEdit />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="expenses/add" element={<ExpenseAdd />} />
+              <Route path="expenses/:id" element={<BookingView />} />
+              <Route path="expenses/edit/:id" element={<BookingEdit />} />
+              <Route path="cleaning" element={<CleaningStatus />} />
+              <Route path="users" element={
+                <ProtectedRoute requiredRole={["admin"]}>
+                  <Users />
+                </ProtectedRoute>
+              } />
+              <Route path="users/add" element={
+                <ProtectedRoute requiredRole={["admin"]}>
+                  <UserAdd />
+                </ProtectedRoute>
+              } />
+              <Route path="users/:id" element={
+                <ProtectedRoute requiredRole={["admin"]}>
+                  <BookingView />
+                </ProtectedRoute>
+              } />
+              <Route path="users/edit/:id" element={
+                <ProtectedRoute requiredRole={["admin"]}>
+                  <BookingEdit />
+                </ProtectedRoute>
+              } />
+              <Route path="owners" element={<Owners />} />
+              <Route path="owners/add" element={<OwnerAdd />} />
+              <Route path="owners/:id" element={<BookingView />} />
+              <Route path="owners/edit/:id" element={<BookingEdit />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="audit" element={<AuditLogs />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+            
+            {/* Owner routes */}
+            <Route path="/owner" element={
+              <ProtectedRoute requiredRole={["owner"]}>
+                <OwnerLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="dashboard" element={<OwnerDashboard />} />
+              <Route path="bookings" element={<OwnerBookings />} />
+              <Route path="availability" element={<OwnerAvailability />} />
+              <Route path="cleaning" element={<OwnerCleaningStatus />} />
+              <Route path="reports" element={<OwnerReports />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

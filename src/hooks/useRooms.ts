@@ -1,44 +1,34 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchRooms, fetchRoomById, updateRoomStatus } from '@/services/api';
-import { useToast } from './use-toast';
+import { rooms } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
 
 export const useRooms = () => {
   return useQuery({
-    queryKey: ['rooms'],
-    queryFn: fetchRooms
+    queryKey: ["rooms"],
+    queryFn: async () => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return rooms;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
 export const useRoom = (id: string) => {
   return useQuery({
-    queryKey: ['rooms', id],
-    queryFn: () => fetchRoomById(id),
-    enabled: !!id
-  });
-};
-
-export const useUpdateRoomStatus = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  return useMutation({
-    mutationFn: ({ id, status }: { id: string, status: string }) => {
-      return updateRoomStatus(id, status);
+    queryKey: ["room", id],
+    queryFn: async () => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const room = rooms.find(r => r.id === id);
+      
+      if (!room) {
+        throw new Error(`Room with ID ${id} not found`);
+      }
+      
+      return room;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms'] });
-      toast({
-        title: 'Room status updated',
-        description: 'The room status has been updated successfully',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Failed to update room status',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

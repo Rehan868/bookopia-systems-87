@@ -1,32 +1,32 @@
 
-import { owners } from "@/lib/mock-data";
+import { properties } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 
-export const useOwners = () => {
+export const useProperties = () => {
   return useQuery({
-    queryKey: ["owners"],
+    queryKey: ["properties"],
     queryFn: async () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
-      return owners;
+      return properties;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
-export const useOwner = (id: string) => {
+export const useProperty = (id: string) => {
   return useQuery({
-    queryKey: ["owner", id],
+    queryKey: ["property", id],
     queryFn: async () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
-      const owner = owners.find(o => o.id === id);
+      const property = properties.find(p => p.id === id);
       
-      if (!owner) {
-        throw new Error(`Owner with ID ${id} not found`);
+      if (!property) {
+        throw new Error(`Property with ID ${id} not found`);
       }
       
-      return owner;
+      return property;
     },
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutes

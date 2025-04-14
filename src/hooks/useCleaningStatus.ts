@@ -1,34 +1,34 @@
 
-import { owners } from "@/lib/mock-data";
+import { cleaningStatus } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 
-export const useOwners = () => {
+export const useCleaningStatus = () => {
   return useQuery({
-    queryKey: ["owners"],
+    queryKey: ["cleaningStatus"],
     queryFn: async () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
-      return owners;
+      return cleaningStatus;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
 
-export const useOwner = (id: string) => {
+export const useRoomCleaningStatus = (roomId: string) => {
   return useQuery({
-    queryKey: ["owner", id],
+    queryKey: ["cleaningStatus", roomId],
     queryFn: async () => {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
-      const owner = owners.find(o => o.id === id);
+      const status = cleaningStatus.find(s => s.roomId === roomId);
       
-      if (!owner) {
-        throw new Error(`Owner with ID ${id} not found`);
+      if (!status) {
+        throw new Error(`Cleaning status for room ID ${roomId} not found`);
       }
       
-      return owner;
+      return status;
     },
-    enabled: !!id,
+    enabled: !!roomId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

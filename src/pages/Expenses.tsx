@@ -1,249 +1,183 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Loader } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { Eye, FileEdit, Loader2, Plus, Search } from 'lucide-react';
 import { useExpenses } from '@/hooks/useExpenses';
-import { format } from 'date-fns';
 
 const Expenses = () => {
-  const { toast } = useToast();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { data: allExpenses, isLoading, error } = useExpenses();
-  
-  const [searchQuery, setSearchQuery] = useState<string>(searchParams.get('q') || "");
-  const [categoryFilter, setCategoryFilter] = useState<string>(searchParams.get('category') || "all");
-  const [dateFilter, setDateFilter] = useState<string>(searchParams.get('date') || "all");
-  const [filteredExpenses, setFilteredExpenses] = useState<any[]>([]);
-  
-  // Apply filters when values change or when data loads
-  useEffect(() => {
-    if (!allExpenses) return;
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const { data: expenses, isLoading, error } = useExpenses();
+
+  // Filter expenses based on search query and filters
+  const filteredExpenses = expenses?.filter(expense => {
+    // Search filter
+    const matchesSearch = searchQuery === '' || 
+      expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expense.vendor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expense.property.toLowerCase().includes(searchQuery.toLowerCase());
     
-    let filtered = [...allExpenses];
+    // Category filter
+    const matchesCategory = categoryFilter === 'all' || expense.category.toLowerCase() === categoryFilter.toLowerCase();
     
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(expense => 
-        expense.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+    // Date filter (simplified for demo)
+    // In a real app, we'd have more complex date filtering logic
+    const matchesDate = dateFilter === 'all';
     
-    // Apply category filter
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(expense => 
-        expense.category === categoryFilter
-      );
-    }
-    
-    // Apply date filter
-    if (dateFilter !== 'all') {
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
-      
-      filtered = filtered.filter(expense => {
-        const expenseDate = new Date(expense.date);
-        
-        if (dateFilter === 'thisMonth') {
-          return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
-        } else if (dateFilter === 'lastMonth') {
-          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-          const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-          return expenseDate.getMonth() === lastMonth && expenseDate.getFullYear() === lastMonthYear;
-        } else if (dateFilter === 'thisYear') {
-          return expenseDate.getFullYear() === currentYear;
-        }
-        
-        return true;
-      });
-    }
-    
-    setFilteredExpenses(filtered);
-    
-    // Update URL with filters
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
-    if (categoryFilter !== 'all') params.set('category', categoryFilter);
-    if (dateFilter !== 'all') params.set('date', dateFilter);
-    
-    setSearchParams(params, { replace: true });
-  }, [searchQuery, categoryFilter, dateFilter, allExpenses]);
-  
-  // Handle search
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      toast({
-        description: `Searching for "${searchQuery}"`,
-      });
-    }
-  };
-  
-  // Handle clearing filters
-  const clearFilters = () => {
-    setSearchQuery("");
-    setCategoryFilter("all");
-    setDateFilter("all");
-    setSearchParams({});
-    toast({
-      description: "All filters have been cleared",
-    });
+    return matchesSearch && matchesCategory && matchesDate;
+  });
+
+  const handleAddNew = () => {
+    navigate('/expenses/add');
   };
 
-  // Get unique categories from expenses
-  const getUniqueCategories = () => {
-    if (!allExpenses) return [];
-    
-    const categories = new Set<string>();
-    allExpenses.forEach(expense => categories.add(expense.category));
-    return Array.from(categories);
+  const getCategoryBadge = (category: string) => {
+    const colorMap: Record<string, string> = {
+      'Maintenance': 'bg-blue-100 text-blue-800',
+      'Utilities': 'bg-yellow-100 text-yellow-800',
+      'Personnel': 'bg-purple-100 text-purple-800',
+      'Supplies': 'bg-green-100 text-green-800',
+      'default': 'bg-gray-100 text-gray-800'
+    };
+
+    return (
+      <Badge className={colorMap[category] || colorMap.default}>
+        {category}
+      </Badge>
+    );
   };
 
   return (
     <div className="animate-fade-in">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Expenses</h1>
           <p className="text-muted-foreground mt-1">Manage all property expenses</p>
         </div>
-        <Button className="flex items-center gap-2" asChild>
-          <Link to="/expenses/add">
-            <PlusCircle className="h-4 w-4" />
-            Add New Expense
-          </Link>
+        <Button onClick={handleAddNew}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Expense
         </Button>
       </div>
-      
+
       <Card className="p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <form onSubmit={handleSearch}>
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search expenses..." 
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </form>
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search expenses..." 
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {getUniqueCategories().map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
-              ))}
+              <SelectItem value="maintenance">Maintenance</SelectItem>
+              <SelectItem value="utilities">Utilities</SelectItem>
+              <SelectItem value="personnel">Personnel</SelectItem>
+              <SelectItem value="supplies">Supplies</SelectItem>
             </SelectContent>
           </Select>
-          
           <Select value={dateFilter} onValueChange={setDateFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="thisMonth">This Month</SelectItem>
-              <SelectItem value="lastMonth">Last Month</SelectItem>
-              <SelectItem value="thisYear">This Year</SelectItem>
+              <SelectItem value="this-month">This Month</SelectItem>
+              <SelectItem value="last-month">Last Month</SelectItem>
+              <SelectItem value="this-year">This Year</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        
-        {(searchQuery || categoryFilter !== "all" || dateFilter !== "all") && (
-          <div className="mt-4 flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">
-              {filteredExpenses.length} {filteredExpenses.length === 1 ? 'expense' : 'expenses'} found
-            </div>
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
-              Clear All Filters
-            </Button>
-          </div>
-        )}
       </Card>
-      
-      <Card>
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Loading expenses...</span>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <p className="text-red-500">Failed to load expenses data</p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Retry
-            </Button>
-          </div>
-        ) : (
-          <Table>
-            <TableCaption>A list of all property expenses.</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredExpenses.length > 0 ? filteredExpenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="font-medium">{expense.description}</TableCell>
-                  <TableCell>${expense.amount.toFixed(2)}</TableCell>
-                  <TableCell>{format(new Date(expense.date), 'MMM d, yyyy')}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{expense.category}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/expenses/${expense.id}`}>View</Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/expenses/edit/${expense.id}`}>Edit</Link>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No expenses found matching your filters
-                  </TableCell>
-                </TableRow>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading expenses...</span>
+        </div>
+      ) : error ? (
+        <div className="text-center p-8 border rounded-lg bg-red-50">
+          <p className="text-red-600">Error loading expenses data.</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
+      ) : (
+        <div className="rounded-lg overflow-hidden border border-border">
+          <table className="w-full">
+            <thead className="bg-muted">
+              <tr>
+                <th className="text-left font-medium px-6 py-3">Description</th>
+                <th className="text-left font-medium px-6 py-3">Amount</th>
+                <th className="text-left font-medium px-6 py-3">Date</th>
+                <th className="text-left font-medium px-6 py-3">Category</th>
+                <th className="text-left font-medium px-6 py-3">Property</th>
+                <th className="text-left font-medium px-6 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredExpenses && filteredExpenses.length > 0 ? (
+                filteredExpenses.map((expense) => (
+                  <tr key={expense.id} className="hover:bg-muted/50">
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{expense.description}</div>
+                      {expense.vendor && (
+                        <div className="text-sm text-muted-foreground">{expense.vendor}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-medium">${expense.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4">{expense.date}</td>
+                    <td className="px-6 py-4">
+                      {getCategoryBadge(expense.category)}
+                    </td>
+                    <td className="px-6 py-4">{expense.property}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="ghost">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost">
+                          <FileEdit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                    No expenses found matching your filters.
+                  </td>
+                </tr>
               )}
-            </TableBody>
-          </Table>
-        )}
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

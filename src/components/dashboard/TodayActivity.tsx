@@ -137,17 +137,12 @@ export function TodayActivity() {
                     {getStatusBadge(item.status)}
                     <Button size="sm" asChild>
                       <Link to={`/bookings/${item.id}`}>
-                        Check In
+                        <ArrowRightCircle className="h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="p-4 border-t">
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/bookings?filter=today-checkins">View All Check-ins</Link>
-              </Button>
             </div>
           </TabsContent>
           <TabsContent value="checkouts" className="mt-0">
@@ -172,19 +167,14 @@ export function TodayActivity() {
                   </div>
                   <div className="flex items-center gap-3">
                     {getStatusBadge(item.status)}
-                    <Button size="sm" variant={item.status === 'completed' ? 'outline' : 'default'} disabled={item.status === 'completed'} asChild>
+                    <Button size="sm" asChild>
                       <Link to={`/bookings/${item.id}`}>
-                        {item.status === 'completed' ? 'Completed' : 'Check Out'}
+                        <ArrowRightCircle className="h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="p-4 border-t">
-              <Button variant="outline" className="w-full" asChild>
-                <Link to="/bookings?filter=today-checkouts">View All Check-outs</Link>
-              </Button>
             </div>
           </TabsContent>
         </CardContent>
