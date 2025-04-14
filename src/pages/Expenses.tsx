@@ -12,8 +12,23 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Eye, FileEdit, Loader2, Plus, Search } from 'lucide-react';
+import { 
+  Eye, 
+  FileEdit, 
+  Loader2, 
+  Plus, 
+  Search,
+  Trash2,
+  Download 
+} from 'lucide-react';
 import { useExpenses } from '@/hooks/useExpenses';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
 
 const Expenses = () => {
   const navigate = useNavigate();
@@ -21,13 +36,14 @@ const Expenses = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<string>('all');
   const { data: expenses, isLoading, error } = useExpenses();
+  const { toast } = useToast();
 
   // Filter expenses based on search query and filters
   const filteredExpenses = expenses?.filter(expense => {
     // Search filter
     const matchesSearch = searchQuery === '' || 
       expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      expense.vendor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (expense.vendor?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
       expense.property.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Category filter
@@ -42,6 +58,29 @@ const Expenses = () => {
 
   const handleAddNew = () => {
     navigate('/expenses/add');
+  };
+  
+  const handleViewExpense = (id: string) => {
+    navigate(`/expenses/${id}`);
+  };
+  
+  const handleEditExpense = (id: string) => {
+    navigate(`/expenses/edit/${id}`);
+  };
+  
+  const handleDeleteExpense = (id: string) => {
+    // In a real app, this would call an API to delete the expense
+    toast({
+      title: "Expense deleted",
+      description: `Expense ${id} has been deleted successfully.`,
+    });
+  };
+  
+  const handleDownloadReceipt = (id: string) => {
+    toast({
+      title: "Receipt downloaded",
+      description: "The receipt has been downloaded to your device.",
+    });
   };
 
   const getCategoryBadge = (category: string) => {
@@ -156,14 +195,53 @@ const Expenses = () => {
                     </td>
                     <td className="px-6 py-4">{expense.property}</td>
                     <td className="px-6 py-4">
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="ghost">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <FileEdit className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <TooltipProvider>
+                        <div className="flex space-x-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="ghost" onClick={() => handleViewExpense(expense.id)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View details</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="ghost" onClick={() => handleEditExpense(expense.id)}>
+                                <FileEdit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit expense</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="ghost" onClick={() => handleDownloadReceipt(expense.id)}>
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download receipt</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteExpense(expense.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete expense</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </td>
                   </tr>
                 ))

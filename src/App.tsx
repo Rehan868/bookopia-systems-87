@@ -21,6 +21,8 @@ import RoomEdit from "./pages/RoomEdit";
 import CleaningStatus from "./pages/CleaningStatus";
 import Expenses from "./pages/Expenses";
 import ExpenseAdd from "./pages/ExpenseAdd";
+import ExpenseView from "./pages/ExpenseView";
+import ExpenseEdit from "./pages/ExpenseEdit";
 import Users from "./pages/Users";
 import UserAdd from "./pages/UserAdd";
 import Owners from "./pages/Owners";
@@ -107,8 +109,8 @@ const App = () => (
               <Route path="rooms/edit/:id" element={<RoomEdit />} />
               <Route path="expenses" element={<Expenses />} />
               <Route path="expenses/add" element={<ExpenseAdd />} />
-              <Route path="expenses/:id" element={<BookingView />} />
-              <Route path="expenses/edit/:id" element={<BookingEdit />} />
+              <Route path="expenses/:id" element={<ExpenseView />} />
+              <Route path="expenses/edit/:id" element={<ExpenseEdit />} />
               <Route path="cleaning" element={<CleaningStatus />} />
               <Route path="users" element={
                 <ProtectedRoute requiredRole={["admin"]}>

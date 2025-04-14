@@ -1,17 +1,31 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarRange, ClipboardList, UserCog, ChartBar, BedDouble, CreditCard, Settings, Users } from "lucide-react";
+import { 
+  CalendarRange, 
+  ClipboardList, 
+  UserCog, 
+  ChartBar, 
+  BedDouble, 
+  CreditCard, 
+  Settings, 
+  Users, 
+  FileText,
+  Bell
+} from "lucide-react";
+
 export function QuickButtons() {
-  return <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
+  return (
+    <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-2">
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent className="mx-0 my-[84px] px-0 py-[15px]">
+      <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-            <Link to="/bookings/new" className="mx-0 my-0 py-[9px] px-0">
+            <Link to="/bookings/new">
               <CalendarRange className="h-5 w-5 mb-2" />
               <span className="text-sm">New Booking</span>
             </Link>
@@ -39,15 +53,24 @@ export function QuickButtons() {
           </Button>
           
           <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-            
+            <Link to="/reports">
+              <ChartBar className="h-5 w-5 mb-2" />
+              <span className="text-sm">Reports</span>
+            </Link>
           </Button>
           
           <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-            
+            <Link to="/availability">
+              <CalendarRange className="h-5 w-5 mb-2" />
+              <span className="text-sm">Availability</span>
+            </Link>
           </Button>
           
           <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-            
+            <Link to="/notifications">
+              <Bell className="h-5 w-5 mb-2" />
+              <span className="text-sm">Alerts</span>
+            </Link>
           </Button>
           
           <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
@@ -58,5 +81,6 @@ export function QuickButtons() {
           </Button>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 }
