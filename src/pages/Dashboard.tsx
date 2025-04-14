@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { OccupancyChart } from "@/components/dashboard/OccupancyChart";
-import { TodayActivity } from "@/components/dashboard/TodayActivity";
+import { QuickButtons } from "@/components/dashboard/QuickButtons";
+import { ActivitySection } from "@/components/dashboard/ActivitySection";
 import { RecentBookings } from "@/components/dashboard/RecentBookings";
-import { BedDouble, ArrowDownToLine, ArrowUpFromLine, Percent, CalendarRange, ClipboardList, UserCog, ChartBar } from "lucide-react";
+import { BedDouble, ArrowDownToLine, ArrowUpFromLine, Percent } from "lucide-react";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 
 const Dashboard = () => {
@@ -55,60 +54,22 @@ const Dashboard = () => {
         />
       </div>
       
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Chart and Quick Buttons Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2">
           <OccupancyChart />
         </div>
         <div>
-          <TodayActivity />
+          <QuickButtons />
         </div>
       </div>
       
-      {/* Bookings & Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <RecentBookings />
-        </div>
-        
-        <div>
-          <div className="border rounded-xl p-6 h-full">
-            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-                <Link to="/bookings/new">
-                  <CalendarRange className="h-5 w-5 mb-2" />
-                  <span className="text-sm">New Booking</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-                <Link to="/cleaning">
-                  <ClipboardList className="h-5 w-5 mb-2" />
-                  <span className="text-sm">Cleaning Status</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-                <Link to="/users">
-                  <UserCog className="h-5 w-5 mb-2" />
-                  <span className="text-sm">Manage Users</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" className="h-auto flex-col p-4 justify-center" asChild>
-                <Link to="/reports">
-                  <ChartBar className="h-5 w-5 mb-2" />
-                  <span className="text-sm">Reports</span>
-                </Link>
-              </Button>
-            </div>
-            
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md text-sm text-blue-800">
-              <p>You have {stats?.pendingMaintenance || 0} maintenance requests pending attention.</p>
-            </div>
-          </div>
-        </div>
+      {/* Today's Activity Section */}
+      <ActivitySection />
+      
+      {/* Recent Bookings Section */}
+      <div className="mt-6">
+        <RecentBookings />
       </div>
     </div>
   );
