@@ -1,4 +1,3 @@
-
 // Mock data for the entire application
 // This file serves as a central repository for all mock data used across the application
 
@@ -103,7 +102,13 @@ export const rooms = [
     status: "occupied",
     maintenance: false,
     lastCleaned: "2023-07-15T08:30:00",
-    nextCheckIn: "2023-07-18T14:00:00"
+    nextCheckIn: "2023-07-18T14:00:00",
+    floor: "1",
+    description: "Luxurious suite with ocean view",
+    amenities: ["WiFi", "Mini Bar", "Air Conditioning", "Ocean View"],
+    features: { hasBalcony: true, hasBathtub: true },
+    created_at: "2023-01-15T10:30:00",
+    updated_at: "2023-07-15T08:30:00"
   },
   {
     id: "r2",
@@ -115,7 +120,13 @@ export const rooms = [
     status: "available",
     maintenance: false,
     lastCleaned: "2023-07-15T09:45:00",
-    nextCheckIn: null
+    nextCheckIn: null,
+    floor: "1",
+    description: "Comfortable standard room",
+    amenities: ["WiFi", "Air Conditioning"],
+    features: { hasBalcony: false, hasBathtub: false },
+    created_at: "2023-01-15T10:35:00",
+    updated_at: "2023-07-15T09:45:00"
   },
   {
     id: "r3",
@@ -127,7 +138,13 @@ export const rooms = [
     status: "available",
     maintenance: true,
     lastCleaned: "2023-07-14T10:15:00",
-    nextCheckIn: null
+    nextCheckIn: null,
+    floor: "2",
+    description: "Spacious executive suite with city view",
+    amenities: ["WiFi", "Mini Bar", "Air Conditioning", "City View", "Work Desk"],
+    features: { hasBalcony: true, hasBathtub: true },
+    created_at: "2023-01-16T11:20:00",
+    updated_at: "2023-07-14T10:15:00"
   },
   {
     id: "r4",
@@ -139,7 +156,13 @@ export const rooms = [
     status: "available",
     maintenance: false,
     lastCleaned: "2023-07-15T11:30:00",
-    nextCheckIn: "2023-07-18T15:00:00"
+    nextCheckIn: "2023-07-18T15:00:00",
+    floor: "2",
+    description: "Luxurious suite with garden view",
+    amenities: ["WiFi", "Mini Bar", "Air Conditioning", "Garden View"],
+    features: { hasBalcony: true, hasBathtub: false },
+    created_at: "2023-01-16T11:45:00",
+    updated_at: "2023-07-15T11:30:00"
   },
   {
     id: "r5",
@@ -151,7 +174,13 @@ export const rooms = [
     status: "cleaning",
     maintenance: false,
     lastCleaned: "2023-07-14T08:00:00",
-    nextCheckIn: "2023-07-16T14:00:00"
+    nextCheckIn: "2023-07-16T14:00:00",
+    floor: "3",
+    description: "Comfortable standard room with partial ocean view",
+    amenities: ["WiFi", "Air Conditioning", "Partial Ocean View"],
+    features: { hasBalcony: false, hasBathtub: false },
+    created_at: "2023-01-17T09:10:00",
+    updated_at: "2023-07-14T08:00:00"
   }
 ];
 
@@ -419,4 +448,3 @@ export const dashboardStats = {
   monthlyRevenue: 24500,
   pendingMaintenance: 2
 };
-

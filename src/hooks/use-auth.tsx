@@ -51,8 +51,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const foundUser = users.find(u => u.email === email);
       
       if (foundUser && password === "password") { // Mock password check
-        setUser(foundUser);
-        localStorage.setItem("user", JSON.stringify(foundUser));
+        // Cast role to UserRole to ensure type safety
+        const userWithCorrectType: User = {
+          id: foundUser.id,
+          name: foundUser.name,
+          email: foundUser.email,
+          role: foundUser.role as UserRole, // Cast to UserRole
+          avatar: foundUser.avatar,
+          properties: foundUser.properties
+        };
+        
+        setUser(userWithCorrectType);
+        localStorage.setItem("user", JSON.stringify(userWithCorrectType));
       } else {
         throw new Error("Invalid email or password");
       }

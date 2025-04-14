@@ -1,4 +1,3 @@
-
 export type Room = {
   id: string;
   number: string;
@@ -12,6 +11,10 @@ export type Room = {
   features: any;
   created_at: string;
   updated_at: string;
+  property?: string; // Adding property field as it's used in RoomList component
+  maintenance?: boolean; // Adding maintenance field used in other components
+  lastCleaned?: string; // Adding lastCleaned field
+  nextCheckIn?: string | null; // Adding nextCheckIn field
 };
 
 export type Booking = {
