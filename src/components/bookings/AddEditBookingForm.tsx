@@ -85,6 +85,26 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
       ...formData,
       [name]: value,
     });
+    
+    // Recalculate financial values if base rate changes
+    if (name === 'baseRate') {
+      const baseRate = parseFloat(value) || 0;
+      const nights = getNumberOfNights();
+      const totalAmount = baseRate * nights;
+      const vat = totalAmount * 0.05; // 5% VAT
+      const tourismFee = totalAmount * 0.03; // 3% Tourism Fee
+      const commission = totalAmount * 0.1; // 10% Commission
+      const netToOwner = totalAmount - vat - tourismFee - commission;
+      
+      setFormData(prev => ({
+        ...prev,
+        totalAmount,
+        vat,
+        tourismFee,
+        commission,
+        netToOwner,
+      }));
+    }
   };
   
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,11 +125,34 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
   const handleDateRangeChange = (range: DateRange | undefined) => {
     if (range?.from) {
       setDateRange(range);
-      setFormData(prev => ({
-        ...prev,
-        checkIn: range.from!,
-        checkOut: range.to || range.from
-      }));
+      setFormData(prev => {
+        const updatedData = {
+          ...prev,
+          checkIn: range.from!,
+          checkOut: range.to || range.from,
+        };
+        
+        // Recalculate total amount based on new dates
+        if (range.to) {
+          const nights = Math.round((range.to.getTime() - range.from!.getTime()) / (1000 * 60 * 60 * 24));
+          const totalAmount = prev.baseRate * nights;
+          const vat = totalAmount * 0.05; // 5% VAT
+          const tourismFee = totalAmount * 0.03; // 3% Tourism Fee
+          const commission = totalAmount * 0.1; // 10% Commission
+          const netToOwner = totalAmount - vat - tourismFee - commission;
+          
+          return {
+            ...updatedData,
+            totalAmount,
+            vat,
+            tourismFee,
+            commission,
+            netToOwner,
+          };
+        }
+        
+        return updatedData;
+      });
     }
   };
   
@@ -428,21 +471,7 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                   min="0"
                   step="0.01"
                   value={formData.baseRate}
-                  onChange={handleNumberChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="totalAmount">Total Amount*</Label>
-                <Input
-                  id="totalAmount"
-                  name="totalAmount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.totalAmount}
-                  onChange={handleNumberChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -456,61 +485,26 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                   min="0"
                   step="0.01"
                   value={formData.securityDeposit}
-                  onChange={handleNumberChange}
+                  onChange={handleInputChange}
                 />
               </div>
               
               <div className="pt-3 border-t space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="commission">Commission</Label>
-                  <Input
-                    id="commission"
-                    name="commission"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.commission}
-                    onChange={handleNumberChange}
-                  />
+                <div className="flex justify-between text-sm">
+                  <span>Commission (10%):</span>
+                  <span>${formData.commission.toFixed(2)}</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="tourismFee">Tourism Fee</Label>
-                  <Input
-                    id="tourismFee"
-                    name="tourismFee"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.tourismFee}
-                    onChange={handleNumberChange}
-                  />
+                <div className="flex justify-between text-sm">
+                  <span>Tourism Fee (3%):</span>
+                  <span>${formData.tourismFee.toFixed(2)}</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="vat">VAT</Label>
-                  <Input
-                    id="vat"
-                    name="vat"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.vat}
-                    onChange={handleNumberChange}
-                  />
+                <div className="flex justify-between text-sm">
+                  <span>VAT (5%):</span>
+                  <span>${formData.vat.toFixed(2)}</span>
                 </div>
-                
-                <div className="space-y-2 pt-2 border-t">
-                  <Label htmlFor="netToOwner">Net to Owner</Label>
-                  <Input
-                    id="netToOwner"
-                    name="netToOwner"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.netToOwner}
-                    onChange={handleNumberChange}
-                  />
+                <div className="flex justify-between font-medium pt-2 border-t">
+                  <span>Net to Owner:</span>
+                  <span>${formData.netToOwner.toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
