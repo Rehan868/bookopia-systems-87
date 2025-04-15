@@ -26,7 +26,11 @@ const ownerFormSchema = z.object({
   properties: z.coerce.number().min(0, { message: "Properties cannot be negative" }),
   revenue: z.coerce.number().min(0, { message: "Revenue cannot be negative" }),
   occupancy: z.coerce.number().min(0, { message: "Occupancy cannot be negative" }).max(100, { message: "Occupancy cannot exceed 100%" }),
-  avatar: z.string().optional()
+  avatar: z.string().optional(),
+  joinedDate: z.string().optional(),
+  bankName: z.string().optional(),
+  accountNumber: z.string().optional(),
+  routingNumber: z.string().optional()
 });
 
 const OwnerEdit = () => {
@@ -45,7 +49,11 @@ const OwnerEdit = () => {
       properties: 0,
       revenue: 0,
       occupancy: 0,
-      avatar: ''
+      avatar: '',
+      joinedDate: '',
+      bankName: '',
+      accountNumber: '',
+      routingNumber: ''
     },
     mode: "onChange",
   });
@@ -60,7 +68,11 @@ const OwnerEdit = () => {
         properties: owner.properties,
         revenue: owner.revenue,
         occupancy: owner.occupancy,
-        avatar: owner.avatar || ''
+        avatar: owner.avatar || '',
+        joinedDate: owner.joinedDate || '',
+        bankName: owner.paymentDetails?.bank || '',
+        accountNumber: owner.paymentDetails?.accountNumber || '',
+        routingNumber: owner.paymentDetails?.routingNumber || ''
       });
     }
   }, [owner, form]);
@@ -215,6 +227,64 @@ const OwnerEdit = () => {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="joinedDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Joined Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="bankName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bank Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter bank name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="accountNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Account Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter account number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="routingNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Routing Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter routing number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <div className="flex justify-end gap-3">
               <Button variant="outline" type="button" onClick={() => navigate(`/owners/${id}`)}>

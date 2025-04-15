@@ -7,10 +7,16 @@ export interface Owner {
   name: string;
   email: string;
   phone: string | null;
-  properties: number;  // Changed from string[] to number
-  revenue: number;     // Added
-  occupancy: number;   // Added
-  avatar?: string;     // Added
+  properties: number;
+  revenue: number;
+  occupancy: number;
+  avatar?: string;
+  paymentDetails: {
+    bank: string;
+    accountNumber: string;
+    routingNumber: string;
+  };
+  joinedDate: string;
 }
 
 export const useOwners = () => {
