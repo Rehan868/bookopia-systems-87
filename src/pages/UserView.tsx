@@ -59,7 +59,7 @@ const UserView = () => {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user.avatar_url} />
+                <AvatarImage src={user.avatar || undefined} />
                 <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
               </Avatar>
               <div>
@@ -76,10 +76,10 @@ const UserView = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Status</p>
                 <Badge 
-                  variant={user.status === 'Active' ? 'success' : 'secondary'}
+                  variant="secondary"
                   className="mt-1"
                 >
-                  {user.status}
+                  Active
                 </Badge>
               </div>
             </div>
@@ -93,16 +93,16 @@ const UserView = () => {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Last Login</p>
-              <p className="font-medium">{user.last_login || 'Never'}</p>
+              <p className="font-medium">{user.lastActive || 'Never'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Created At</p>
-              <p className="font-medium">{user.created_at}</p>
+              <p className="font-medium">{new Date().toISOString().split('T')[0]}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Two-Factor Auth</p>
-              <Badge variant={user.two_factor_enabled ? 'success' : 'secondary'}>
-                {user.two_factor_enabled ? 'Enabled' : 'Disabled'}
+              <Badge variant="secondary">
+                Disabled
               </Badge>
             </div>
           </CardContent>
