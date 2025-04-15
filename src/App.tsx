@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,10 +20,16 @@ import RoomEdit from "./pages/RoomEdit";
 import CleaningStatus from "./pages/CleaningStatus";
 import Expenses from "./pages/Expenses";
 import ExpenseAdd from "./pages/ExpenseAdd";
+import ExpenseView from "./pages/ExpenseView";
+import ExpenseEdit from "./pages/ExpenseEdit";
 import Users from "./pages/Users";
 import UserAdd from "./pages/UserAdd";
+import UserView from "./pages/UserView";
+import UserEdit from "./pages/UserEdit";
 import Owners from "./pages/Owners";
 import OwnerAdd from "./pages/OwnerAdd";
+import OwnerView from "./pages/OwnerView";
+import OwnerEdit from "./pages/OwnerEdit";
 import Reports from "./pages/Reports";
 import AuditLogs from "./pages/AuditLogs";
 import Settings from "./pages/Settings";
@@ -40,7 +45,6 @@ import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
-// Protected route component that redirects to login if not authenticated
 const ProtectedRoute = ({ 
   children,
   requiredRole = ["admin", "staff", "manager"],
@@ -88,7 +92,6 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/owner/login" element={<OwnerLogin />} />
             
-            {/* Staff routes */}
             <Route path="/" element={
               <ProtectedRoute>
                 <MainLayout />
@@ -107,8 +110,8 @@ const App = () => (
               <Route path="rooms/edit/:id" element={<RoomEdit />} />
               <Route path="expenses" element={<Expenses />} />
               <Route path="expenses/add" element={<ExpenseAdd />} />
-              <Route path="expenses/:id" element={<BookingView />} />
-              <Route path="expenses/edit/:id" element={<BookingEdit />} />
+              <Route path="expenses/:id" element={<ExpenseView />} />
+              <Route path="expenses/edit/:id" element={<ExpenseEdit />} />
               <Route path="cleaning" element={<CleaningStatus />} />
               <Route path="users" element={
                 <ProtectedRoute requiredRole={["admin"]}>
@@ -122,24 +125,23 @@ const App = () => (
               } />
               <Route path="users/:id" element={
                 <ProtectedRoute requiredRole={["admin"]}>
-                  <BookingView />
+                  <UserView />
                 </ProtectedRoute>
               } />
               <Route path="users/edit/:id" element={
                 <ProtectedRoute requiredRole={["admin"]}>
-                  <BookingEdit />
+                  <UserEdit />
                 </ProtectedRoute>
               } />
               <Route path="owners" element={<Owners />} />
               <Route path="owners/add" element={<OwnerAdd />} />
-              <Route path="owners/:id" element={<BookingView />} />
-              <Route path="owners/edit/:id" element={<BookingEdit />} />
+              <Route path="owners/:id" element={<OwnerView />} />
+              <Route path="owners/edit/:id" element={<OwnerEdit />} />
               <Route path="reports" element={<Reports />} />
               <Route path="audit" element={<AuditLogs />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             
-            {/* Owner routes */}
             <Route path="/owner" element={
               <ProtectedRoute requiredRole={["owner"]}>
                 <OwnerLayout />
