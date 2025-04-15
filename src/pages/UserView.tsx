@@ -23,7 +23,7 @@ const UserView = () => {
   const { data: auditLogs } = useAuditLogs();
   
   // Filter audit logs for this specific user
-  const userLogs = auditLogs?.filter(log => log.userId === id).slice(0, 5) || [];
+  const userLogs = auditLogs?.filter(log => log.user === id).slice(0, 5) || [];
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -135,7 +135,7 @@ const UserView = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Action</TableHead>
-                  <TableHead>Resource</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Date & Time</TableHead>
                 </TableRow>
               </TableHeader>
@@ -150,7 +150,7 @@ const UserView = () => {
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell>{log.resource}</TableCell>
+                    <TableCell>{log.type}</TableCell>
                     <TableCell className="text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />

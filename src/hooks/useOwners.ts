@@ -2,6 +2,17 @@
 import { owners } from "@/lib/mock-data";
 import { useQuery } from "@tanstack/react-query";
 
+export interface Owner {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  properties: number;  // Changed from string[] to number
+  revenue: number;     // Added
+  occupancy: number;   // Added
+  avatar?: string;     // Added
+}
+
 export const useOwners = () => {
   return useQuery({
     queryKey: ["owners"],
