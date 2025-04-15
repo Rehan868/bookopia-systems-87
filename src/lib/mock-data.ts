@@ -1,3 +1,4 @@
+
 // Mock data for the entire application
 // This file serves as a central repository for all mock data used across the application
 
@@ -286,7 +287,10 @@ export const owners = [
     name: "John Owner",
     email: "jowner@example.com",
     phone: "+1 (555) 123-9876",
-    properties: ["Marina Tower"],
+    properties: 2,
+    revenue: 75000,
+    occupancy: 85,
+    avatar: "/placeholder.svg",
     paymentDetails: {
       bank: "Bank of America",
       accountNumber: "****5678",
@@ -299,7 +303,10 @@ export const owners = [
     name: "Sarah Property",
     email: "sproperty@example.com",
     phone: "+1 (555) 234-8765",
-    properties: ["Downtown Heights"],
+    properties: 1,
+    revenue: 45000,
+    occupancy: 75,
+    avatar: null,
     paymentDetails: {
       bank: "Chase Bank",
       accountNumber: "****4567",
@@ -312,7 +319,10 @@ export const owners = [
     name: "Investment Group LLC",
     email: "contact@investgroup.example.com",
     phone: "+1 (555) 345-7654",
-    properties: ["Marina Tower", "Downtown Heights"],
+    properties: 4,
+    revenue: 120000,
+    occupancy: 92,
+    avatar: "/placeholder.svg",
     paymentDetails: {
       bank: "Wells Fargo",
       accountNumber: "****3456",
