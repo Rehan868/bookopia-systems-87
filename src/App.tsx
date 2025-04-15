@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,8 @@ import UserView from "./pages/UserView";
 import UserEdit from "./pages/UserEdit";
 import Owners from "./pages/Owners";
 import OwnerAdd from "./pages/OwnerAdd";
+import OwnerView from "./pages/OwnerView";
+import OwnerEdit from "./pages/OwnerEdit";
 import Reports from "./pages/Reports";
 import AuditLogs from "./pages/AuditLogs";
 import Settings from "./pages/Settings";
@@ -133,6 +136,8 @@ const App = () => (
               } />
               <Route path="owners" element={<Owners />} />
               <Route path="owners/add" element={<OwnerAdd />} />
+              <Route path="owners/:id" element={<OwnerView />} />
+              <Route path="owners/edit/:id" element={<OwnerEdit />} />
               <Route path="reports" element={<Reports />} />
               <Route path="audit" element={<AuditLogs />} />
               <Route path="settings" element={<Settings />} />

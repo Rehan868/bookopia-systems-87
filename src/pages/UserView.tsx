@@ -3,14 +3,27 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, FileEdit } from 'lucide-react';
+import { ArrowLeft, FileEdit, Clock } from 'lucide-react';
 import { useUser } from '@/hooks/useUsers';
+import { useAuditLogs } from '@/hooks/useAuditLogs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const UserView = () => {
   const { id } = useParams();
   const { data: user, isLoading, error } = useUser(id || '');
+  const { data: auditLogs } = useAuditLogs();
+  
+  // Filter audit logs for this specific user
+  const userLogs = auditLogs?.filter(log => log.userId === id).slice(0, 5) || [];
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -51,7 +64,7 @@ const UserView = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
@@ -108,6 +121,53 @@ const UserView = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Recent Activity</CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/audit">View All</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {userLogs.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Resource</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {userLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={log.action === 'create' ? 'outline' : 
+                                        log.action === 'update' ? 'secondary' : 'default'}>
+                          {log.action}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>{log.resource}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(log.timestamp).toLocaleString()}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-muted-foreground mb-2">No activity found for this user</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
