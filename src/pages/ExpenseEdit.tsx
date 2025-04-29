@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,8 @@ const expenseFormSchema = z.object({
   property: z.string().min(1, "Property is required"),
   vendor: z.string().optional(),
   paymentMethod: z.string().optional(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  owner: z.string().optional()
 });
 
 const ExpenseEdit = () => {
@@ -55,7 +55,8 @@ const ExpenseEdit = () => {
       property: '',
       vendor: '',
       paymentMethod: '',
-      notes: ''
+      notes: '',
+      owner: ''
     },
     mode: "onChange",
   });
@@ -71,7 +72,8 @@ const ExpenseEdit = () => {
         property: expense.property,
         vendor: expense.vendor || '',
         paymentMethod: expense.paymentMethod || '',
-        notes: expense.notes || ''
+        notes: expense.notes || '',
+        owner: expense.owner || ''
       });
     }
   }, [expense, form]);
@@ -278,6 +280,29 @@ const ExpenseEdit = () => {
                       {...field} 
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="owner"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Owner</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an owner" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Owner1">Owner 1</SelectItem>
+                      <SelectItem value="Owner2">Owner 2</SelectItem>
+                      <SelectItem value="Owner3">Owner 3</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

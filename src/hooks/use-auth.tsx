@@ -1,100 +1,99 @@
 
-import { useState, useEffect, createContext, useContext } from "react";
-import { users } from "@/lib/mock-data";
-
-export type UserRole = "admin" | "staff" | "manager" | "owner";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  avatar?: string | null;
-  properties: string[];
+  role: string;
 }
 
 interface AuthContextType {
+  isAuthenticated: boolean;
   user: User | null;
-  isLoading: boolean;
-  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  isAuthenticated: boolean;
+  ownerLogin: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user info is stored in localStorage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    // Check if user is logged in from localStorage
+    const storedUser = localStorage.getItem('user');
+    const storedIsAuthenticated = localStorage.getItem('isAuthenticated');
+    
+    if (storedUser && storedIsAuthenticated === 'true') {
       setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Simple mock authentication
-      // In a real app, this would validate credentials against a backend
-      const foundUser = users.find(u => u.email === email);
-      
-      if (foundUser && password === "password") { // Mock password check
-        // Cast role to UserRole to ensure type safety
-        const userWithCorrectType: User = {
-          id: foundUser.id,
-          name: foundUser.name,
-          email: foundUser.email,
-          role: foundUser.role as UserRole, // Cast to UserRole
-          avatar: foundUser.avatar,
-          properties: foundUser.properties
-        };
-        
-        setUser(userWithCorrectType);
-        localStorage.setItem("user", JSON.stringify(userWithCorrectType));
-      } else {
-        throw new Error("Invalid email or password");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    // This is a mock login function - in a real app, this would call your API
+    // Simulate API call with delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // For demo purposes, we'll just accept any credentials
+    const mockUser = {
+      id: '1',
+      name: 'Admin User',
+      email: email,
+      role: 'admin',
+    };
+    
+    // Store in local storage
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('isAuthenticated', 'true');
+    
+    // Update state
+    setUser(mockUser);
+    setIsAuthenticated(true);
   };
-
+  
+  const ownerLogin = async (email: string, password: string) => {
+    // This is a mock login function for owners
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const mockUser = {
+      id: '2',
+      name: 'Owner User',
+      email: email,
+      role: 'owner',
+    };
+    
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('isAuthenticated', 'true');
+    
+    setUser(mockUser);
+    setIsAuthenticated(true);
+  };
+  
   const logout = () => {
+    // Remove from local storage
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
+    
+    // Update state
     setUser(null);
-    localStorage.removeItem("user");
+    setIsAuthenticated(false);
   };
 
-  const value = {
-    user,
-    isLoading,
-    error,
-    login,
-    logout,
-    isAuthenticated: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, ownerLogin }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}

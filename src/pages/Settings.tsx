@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,10 +30,42 @@ import {
   User,
   Users
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 
 const Settings = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
+  
+  // Dialog open states
+  const [newPropertyDialogOpen, setNewPropertyDialogOpen] = useState(false);
+  const [newRoomTypeDialogOpen, setNewRoomTypeDialogOpen] = useState(false);
+
+  // New property form state
+  const [newProperty, setNewProperty] = useState({
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    email: '',
+    timezone: 'est'
+  });
+
+  // New room type form state
+  const [newRoomType, setNewRoomType] = useState({
+    name: '',
+    baseRate: '',
+    maxOccupancy: '2',
+    description: ''
+  });
   
   // Form states
   const [companyName, setCompanyName] = useState('HotelManager Co.');
@@ -76,6 +107,60 @@ const Settings = () => {
       title: "User Settings Saved",
       description: "User access settings have been updated successfully.",
     });
+  };
+
+  // Property form handlers
+  const handlePropertyInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewProperty(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handlePropertySelectChange = (name: string, value: string) => {
+    setNewProperty(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddProperty = () => {
+    // In a real app, this would send data to an API
+    toast({
+      title: "Property Added",
+      description: `${newProperty.name} has been added successfully.`,
+    });
+    
+    // Reset form and close dialog
+    setNewProperty({
+      name: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      phone: '',
+      email: '',
+      timezone: 'est'
+    });
+    setNewPropertyDialogOpen(false);
+  };
+
+  // Room type form handlers
+  const handleRoomTypeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewRoomType(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddRoomType = () => {
+    // In a real app, this would send data to an API
+    toast({
+      title: "Room Type Added",
+      description: `${newRoomType.name} has been added successfully.`,
+    });
+    
+    // Reset form and close dialog
+    setNewRoomType({
+      name: '',
+      baseRate: '',
+      maxOccupancy: '2',
+      description: ''
+    });
+    setNewRoomTypeDialogOpen(false);
   };
   
   return (
@@ -398,7 +483,7 @@ const Settings = () => {
                   </table>
                 </div>
                 
-                <Button>Add New Property</Button>
+                <Button onClick={() => setNewPropertyDialogOpen(true)}>Add New Property</Button>
               </div>
               
               <Separator />
@@ -524,7 +609,7 @@ const Settings = () => {
               </div>
               
               <div className="flex gap-3">
-                <Button>Add Room Type</Button>
+                <Button onClick={() => setNewRoomTypeDialogOpen(true)}>Add Room Type</Button>
                 <Button variant="outline" className="flex items-center gap-2">
                   <BadgePercent className="h-4 w-4" />
                   Manage Rate Plans
@@ -910,6 +995,206 @@ const Settings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add New Property Dialog */}
+      <Dialog open={newPropertyDialogOpen} onOpenChange={setNewPropertyDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Property</DialogTitle>
+            <DialogDescription>
+              Enter the details of your new property. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="property-name">Property Name*</Label>
+              <Input 
+                id="property-name"
+                name="name" 
+                value={newProperty.name}
+                onChange={handlePropertyInputChange}
+                placeholder="e.g. Mountain View Resort"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="property-address">Address*</Label>
+              <Input 
+                id="property-address"
+                name="address" 
+                value={newProperty.address}
+                onChange={handlePropertyInputChange}
+                placeholder="Street address"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="property-city">City*</Label>
+                <Input 
+                  id="property-city"
+                  name="city" 
+                  value={newProperty.city}
+                  onChange={handlePropertyInputChange}
+                  placeholder="City"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="property-state">State/Province*</Label>
+                <Input 
+                  id="property-state"
+                  name="state" 
+                  value={newProperty.state}
+                  onChange={handlePropertyInputChange}
+                  placeholder="State/Province"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="property-zipCode">Zip/Postal Code*</Label>
+                <Input 
+                  id="property-zipCode"
+                  name="zipCode" 
+                  value={newProperty.zipCode}
+                  onChange={handlePropertyInputChange}
+                  placeholder="Zip/Postal Code"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="property-phone">Phone Number*</Label>
+                <Input 
+                  id="property-phone"
+                  name="phone" 
+                  value={newProperty.phone}
+                  onChange={handlePropertyInputChange}
+                  placeholder="Phone Number"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="property-email">Email Address*</Label>
+              <Input 
+                id="property-email"
+                name="email" 
+                type="email"
+                value={newProperty.email}
+                onChange={handlePropertyInputChange}
+                placeholder="Email Address"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="property-timezone">Timezone*</Label>
+              <Select
+                value={newProperty.timezone}
+                onValueChange={(value) => handlePropertySelectChange('timezone', value)}
+              >
+                <SelectTrigger id="property-timezone">
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="est">Eastern Time (ET)</SelectItem>
+                  <SelectItem value="cst">Central Time (CT)</SelectItem>
+                  <SelectItem value="mst">Mountain Time (MT)</SelectItem>
+                  <SelectItem value="pst">Pacific Time (PT)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewPropertyDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddProperty}>Save Property</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add New Room Type Dialog */}
+      <Dialog open={newRoomTypeDialogOpen} onOpenChange={setNewRoomTypeDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Room Type</DialogTitle>
+            <DialogDescription>
+              Add a new room type to your property. This will be available for room assignments.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="room-type-name">Room Type Name*</Label>
+              <Input 
+                id="room-type-name"
+                name="name" 
+                value={newRoomType.name}
+                onChange={handleRoomTypeInputChange}
+                placeholder="e.g. Deluxe Suite"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="room-type-baseRate">Base Rate (per night)*</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-muted-foreground">$</span>
+                <Input
+                  id="room-type-baseRate"
+                  name="baseRate"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="pl-7"
+                  value={newRoomType.baseRate}
+                  onChange={handleRoomTypeInputChange}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="room-type-maxOccupancy">Maximum Occupancy*</Label>
+              <Input 
+                id="room-type-maxOccupancy"
+                name="maxOccupancy" 
+                type="number"
+                min="1"
+                value={newRoomType.maxOccupancy}
+                onChange={handleRoomTypeInputChange}
+                placeholder="Number of guests"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="room-type-description">Description</Label>
+              <Textarea 
+                id="room-type-description"
+                name="description" 
+                value={newRoomType.description}
+                onChange={handleRoomTypeInputChange}
+                placeholder="Describe the room features, amenities, etc."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewRoomTypeDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddRoomType}>Save Room Type</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

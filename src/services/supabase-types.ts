@@ -1,36 +1,82 @@
 export type Room = {
   id: string;
   number: string;
-  type: string;
-  capacity: number;
-  rate: number;
-  status: 'available' | 'occupied' | 'maintenance';
+  property_id: string;
+  room_type_id: string;
+  status: 'available' | 'occupied' | 'maintenance' | 'cleaning';
   floor: string;
+  size: number | null;
   description: string | null;
-  amenities: string[];
-  features: any;
+  max_adults: number;
+  max_children: number;
+  base_rate: number;
+  active: boolean;
+  notes: string | null;
+  amenities: any;
+  image_urls: string[] | null;
   created_at: string;
   updated_at: string;
-  property?: string; // Adding property field as it's used in RoomList component
-  maintenance?: boolean; // Adding maintenance field used in other components
-  lastCleaned?: string; // Adding lastCleaned field
-  nextCheckIn?: string | null; // Adding nextCheckIn field
+  property?: string;
+  maintenance?: boolean;
+  lastCleaned?: string;
+  nextCheckIn?: string | null;
+};
+
+export type Guest = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip_code: string | null;
+  country: string | null;
+  nationality: string | null;
+  passport_number: string | null;
+  id_document_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Booking = {
   id: string;
+  reference: string;
   room_id: string;
-  booking_number: string;
-  guest_name: string;
-  check_in: string;
-  check_out: string;
-  amount: number;
-  status: string;
-  payment_status: string;
-  special_requests: string | null;
+  guest_id: string;
+  check_in_date: string;
+  check_out_date: string;
+  adults: number;
+  children: number;
+  base_rate: number;
+  total_amount: number;
+  security_deposit: number;
+  commission: number;
+  tourism_fee: number;
+  vat: number;
+  net_to_owner: number;
+  status: 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show';
+  payment_status: 'pending' | 'partial' | 'paid' | 'refunded';
+  amount_paid: number;
+  pending_amount?: number;
+  notes: string | null;
   created_at: string;
   updated_at: string;
-  rooms?: any; // Adding rooms property that comes from join queries
+  created_by?: string | null;
+  updated_by?: string | null;
+  rooms?: {
+    number: string;
+    property_id: string;
+  };
+  guests?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  };
+  guest_name?: string; // Computed property for convenience
 };
 
 export type User = {

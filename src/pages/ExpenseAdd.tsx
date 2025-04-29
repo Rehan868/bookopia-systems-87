@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,7 @@ const ExpenseAdd = () => {
     vendor: '',
     paymentMethod: '',
     notes: '',
+    owner: '',
   });
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -214,6 +214,26 @@ const ExpenseAdd = () => {
                       <SelectItem value="Check">Check</SelectItem>
                       <SelectItem value="Auto-Payment">Auto-Payment</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="owner">Owner*</Label>
+                  <Select
+                    value={formData.owner}
+                    onValueChange={handleSelectChange('owner')}
+                    required
+                  >
+                    <SelectTrigger id="owner">
+                      <SelectValue placeholder="Select an owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Owner1">Owner 1</SelectItem>
+                      <SelectItem value="Owner2">Owner 2</SelectItem>
+                      <SelectItem value="Owner3">Owner 3</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

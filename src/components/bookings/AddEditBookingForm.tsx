@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,17 +7,22 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DateRange } from 'react-day-picker';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { CalendarIcon, Loader } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useBooking } from '@/hooks/useBookings';
+import { fetchRooms } from '@/services/api';
+import { Booking, Guest, Room } from '@/services/supabase-types';
 
 interface BookingFormData {
   reference: string;
-  guestName: string;
+  room_id: string;
+  guestFirstName: string;
+  guestLastName: string;
   guestEmail: string;
   guestPhone: string;
   property: string;
@@ -27,92 +31,194 @@ interface BookingFormData {
   checkOut: Date;
   adults: number;
   children: number;
-  baseRate: number;
-  totalAmount: number;
-  securityDeposit: number;
+  base_rate: number;
+  total_amount: number;
+  security_deposit: number;
   commission: number;
-  tourismFee: number;
+  tourism_fee: number;
   vat: number;
-  netToOwner: number;
+  net_to_owner: number;
   notes: string;
   status: string;
-  paymentStatus: string;
+  payment_status: string;
   sendConfirmation: boolean;
+  guestDocument?: File | null;
+  amount_paid: number;
 }
 
 interface AddEditBookingFormProps {
   mode: 'add' | 'edit';
-  bookingData?: Partial<BookingFormData>;
+  bookingId?: string;
 }
 
-export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProps) {
+// Helper function to ensure values are numbers
+const ensureNumber = (val: any): number => {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const parsed = parseFloat(val);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
+
+export function AddEditBookingForm({ mode }: AddEditBookingFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { id } = useParams<{ id: string }>();
+  const { data: bookingData, isLoading, error, saveBooking } = useBooking(mode === 'edit' ? id : undefined);
   
-  const defaultData: BookingFormData = {
-    reference: mode === 'edit' ? bookingData?.reference || '' : `BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-    guestName: bookingData?.guestName || '',
-    guestEmail: bookingData?.guestEmail || '',
-    guestPhone: bookingData?.guestPhone || '',
-    property: bookingData?.property || '',
-    roomNumber: bookingData?.roomNumber || '',
-    checkIn: bookingData?.checkIn || new Date(),
-    checkOut: bookingData?.checkOut || new Date(new Date().setDate(new Date().getDate() + 3)),
-    adults: bookingData?.adults || 2,
-    children: bookingData?.children || 0,
-    baseRate: bookingData?.baseRate || 0,
-    totalAmount: bookingData?.totalAmount || 0,
-    securityDeposit: bookingData?.securityDeposit || 0,
-    commission: bookingData?.commission || 0,
-    tourismFee: bookingData?.tourismFee || 0,
-    vat: bookingData?.vat || 0,
-    netToOwner: bookingData?.netToOwner || 0,
-    notes: bookingData?.notes || '',
-    status: bookingData?.status || 'confirmed',
-    paymentStatus: bookingData?.paymentStatus || 'pending',
-    sendConfirmation: bookingData?.sendConfirmation !== undefined ? bookingData.sendConfirmation : true,
-  };
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(true);
   
-  const [formData, setFormData] = useState<BookingFormData>(defaultData);
+  const [formData, setFormData] = useState<BookingFormData>({
+    reference: mode === 'edit' ? '' : `BK-${Date.now().toString().slice(-6)}`,
+    room_id: '',
+    guestFirstName: '',
+    guestLastName: '',
+    guestEmail: '',
+    guestPhone: '',
+    property: '',
+    roomNumber: '',
+    checkIn: new Date(),
+    checkOut: new Date(new Date().setDate(new Date().getDate() + 3)),
+    adults: 2,
+    children: 0,
+    base_rate: 0,
+    total_amount: 0,
+    security_deposit: 100,
+    commission: 0,
+    tourism_fee: 0,
+    vat: 0,
+    net_to_owner: 0,
+    notes: '',
+    status: 'confirmed',
+    payment_status: 'pending',
+    sendConfirmation: true,
+    guestDocument: null,
+    amount_paid: 0,
+  });
+  
   const [dateRange, setDateRange] = useState<DateRange>({
     from: formData.checkIn,
     to: formData.checkOut,
   });
   
+  // Load rooms data
+  useEffect(() => {
+    const loadRooms = async () => {
+      try {
+        setIsLoadingRooms(true);
+        const roomsData = await fetchRooms();
+        setRooms(roomsData);
+      } catch (error) {
+        console.error('Error loading rooms:', error);
+      } finally {
+        setIsLoadingRooms(false);
+      }
+    };
+    
+    loadRooms();
+  }, []);
+  
+  // Populate form with booking data when in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && bookingData) {
+      let firstN = '';
+      let lastN = '';
+      
+      // Extract first and last name from the guest data
+      if (bookingData.guests) {
+        firstN = bookingData.guests.first_name || '';
+        lastN = bookingData.guests.last_name || '';
+      } else if (bookingData.guest_name) {
+        // If we only have a combined name, make a best guess at splitting it
+        const nameParts = bookingData.guest_name.split(' ');
+        if (nameParts.length > 1) {
+          firstN = nameParts[0];
+          lastN = nameParts.slice(1).join(' ');
+        } else {
+          firstN = nameParts[0];
+        }
+      }
+      
+      setFormData({
+        reference: bookingData.reference || '',
+        room_id: bookingData.room_id || '',
+        guestFirstName: firstN,
+        guestLastName: lastN,
+        guestEmail: bookingData.guests?.email || '',
+        guestPhone: bookingData.guests?.phone || '',
+        property: '',  // Will be set when rooms are loaded
+        roomNumber: bookingData.rooms?.number || '',
+        checkIn: bookingData.check_in_date ? parseISO(bookingData.check_in_date) : new Date(),
+        checkOut: bookingData.check_out_date ? parseISO(bookingData.check_out_date) : new Date(),
+        adults: ensureNumber(bookingData.adults) || 2,
+        children: ensureNumber(bookingData.children) || 0,
+        base_rate: ensureNumber(bookingData.base_rate) || 0,
+        total_amount: ensureNumber(bookingData.total_amount) || 0,
+        security_deposit: ensureNumber(bookingData.security_deposit) || 100,
+        commission: ensureNumber(bookingData.commission) || 0,
+        tourism_fee: ensureNumber(bookingData.tourism_fee) || 0,
+        vat: ensureNumber(bookingData.vat) || 0,
+        net_to_owner: ensureNumber(bookingData.net_to_owner) || 0,
+        notes: bookingData.notes || '',
+        status: bookingData.status || 'confirmed',
+        payment_status: bookingData.payment_status || 'pending',
+        sendConfirmation: true,
+        guestDocument: null,
+        amount_paid: ensureNumber(bookingData.amount_paid) || 0,
+      });
+      
+      setDateRange({
+        from: bookingData.check_in_date ? parseISO(bookingData.check_in_date) : new Date(),
+        to: bookingData.check_out_date ? parseISO(bookingData.check_out_date) : new Date(),
+      });
+    }
+  }, [bookingData, mode]);
+  
+  // Set property based on room selection when rooms are loaded
+  useEffect(() => {
+    if (rooms.length > 0 && formData.room_id) {
+      const selectedRoom = rooms.find(room => room.id === formData.room_id);
+      if (selectedRoom) {
+        setFormData(prev => ({
+          ...prev,
+          roomNumber: selectedRoom.number,
+          property: selectedRoom.property || '',
+          base_rate: selectedRoom.base_rate || prev.base_rate
+        }));
+      }
+    }
+  }, [formData.room_id, rooms]);
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value,
-    });
-    
-    // Recalculate financial values if base rate changes
-    if (name === 'baseRate') {
-      const baseRate = parseFloat(value) || 0;
-      const nights = getNumberOfNights();
-      const totalAmount = baseRate * nights;
-      const vat = totalAmount * 0.05; // 5% VAT
-      const tourismFee = totalAmount * 0.03; // 3% Tourism Fee
-      const commission = totalAmount * 0.1; // 10% Commission
-      const netToOwner = totalAmount - vat - tourismFee - commission;
-      
-      setFormData(prev => ({
-        ...prev,
-        totalAmount,
-        vat,
-        tourismFee,
-        commission,
-        netToOwner,
-      }));
-    }
+    }));
   };
   
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: Number(value),
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: ensureNumber(value),
+    }));
+    
+    // Recalculate amounts if base_rate changes
+    if (name === 'base_rate') {
+      recalculateAmounts(ensureNumber(value));
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFormData(prev => ({
+        ...prev,
+        guestDocument: e.target.files![0]
+      }));
+    }
   };
   
   const handleCheckboxChange = (checked: boolean) => {
@@ -120,6 +226,44 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
       ...formData,
       sendConfirmation: checked,
     });
+  };
+  
+  const handleRoomChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      room_id: value
+    }));
+    
+    const selectedRoom = rooms.find(room => room.id === value);
+    if (selectedRoom) {
+      setFormData(prev => ({
+        ...prev,
+        roomNumber: selectedRoom.number,
+        property: selectedRoom.property || '',
+        base_rate: selectedRoom.base_rate || prev.base_rate
+      }));
+      
+      recalculateAmounts(selectedRoom.base_rate);
+    }
+  };
+  
+  const recalculateAmounts = (baseRate: number) => {
+    const nights = getNumberOfNights();
+    const totalAmount = baseRate * nights;
+    const vat = totalAmount * 0.05; // 5% VAT
+    const tourismFee = totalAmount * 0.03; // 3% Tourism Fee
+    const commission = totalAmount * 0.1; // 10% Commission
+    const netToOwner = totalAmount - vat - tourismFee - commission;
+    
+    setFormData(prev => ({
+      ...prev,
+      base_rate: baseRate,
+      total_amount: totalAmount,
+      vat: vat,
+      tourism_fee: tourismFee,
+      commission: commission,
+      net_to_owner: netToOwner
+    }));
   };
   
   const handleDateRangeChange = (range: DateRange | undefined) => {
@@ -132,10 +276,11 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
           checkOut: range.to || range.from,
         };
         
-        // Recalculate total amount based on new dates
+        // Recalculate amounts based on new date range
         if (range.to) {
           const nights = Math.round((range.to.getTime() - range.from!.getTime()) / (1000 * 60 * 60 * 24));
-          const totalAmount = prev.baseRate * nights;
+          const baseRate = ensureNumber(prev.base_rate);
+          const totalAmount = baseRate * nights;
           const vat = totalAmount * 0.05; // 5% VAT
           const tourismFee = totalAmount * 0.03; // 3% Tourism Fee
           const commission = totalAmount * 0.1; // 10% Commission
@@ -143,11 +288,11 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
           
           return {
             ...updatedData,
-            totalAmount,
+            total_amount: totalAmount,
             vat,
-            tourismFee,
+            tourism_fee: tourismFee,
             commission,
-            netToOwner,
+            net_to_owner: netToOwner,
           };
         }
         
@@ -162,20 +307,86 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
     return Math.round(Math.abs(formData.checkOut.getTime() - formData.checkIn.getTime()) / msPerDay);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // In a real app, this would send data to an API
-    console.log('Submitting booking data:', formData);
-    
-    toast({
-      title: mode === 'add' ? "Booking Created" : "Booking Updated",
-      description: `The booking for ${formData.guestName} has been ${mode === 'add' ? 'created' : 'updated'} successfully.`,
-    });
-    
-    // Navigate back to the bookings list
-    navigate('/bookings');
+    try {
+      // Prepare the booking data for the API
+      const bookingPayload: Partial<Booking> = {
+        room_id: formData.room_id,
+        check_in_date: formData.checkIn.toISOString().split('T')[0],
+        check_out_date: formData.checkOut.toISOString().split('T')[0],
+        adults: formData.adults,
+        children: formData.children,
+        base_rate: formData.base_rate,
+        total_amount: formData.total_amount,
+        security_deposit: formData.security_deposit,
+        commission: formData.commission,
+        tourism_fee: formData.tourism_fee,
+        vat: formData.vat,
+        net_to_owner: formData.net_to_owner,
+        status: formData.status as 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'no_show',
+        payment_status: formData.payment_status as 'pending' | 'partial' | 'paid' | 'refunded',
+        amount_paid: formData.amount_paid,
+        notes: formData.notes
+      };
+      
+      // Prepare the guest data
+      const guestPayload: Partial<Guest> = {
+        first_name: formData.guestFirstName,
+        last_name: formData.guestLastName,
+        email: formData.guestEmail || null,
+        phone: formData.guestPhone || null
+      };
+      
+      // Save the booking
+      await saveBooking(bookingPayload, guestPayload);
+      
+      toast({
+        title: mode === 'add' ? "Booking Created" : "Booking Updated",
+        description: `The booking for ${formData.guestFirstName} ${formData.guestLastName} has been ${mode === 'add' ? 'created' : 'updated'} successfully.`,
+      });
+      
+      navigate('/bookings');
+    } catch (error) {
+      console.error('Error saving booking:', error);
+      toast({
+        title: "Error",
+        description: `There was a problem ${mode === 'add' ? 'creating' : 'updating'} the booking. Please try again.`,
+        variant: "destructive"
+      });
+    }
   };
+  
+  // Format a number for display, handling potential non-numeric values
+  const formatNumber = (value: any): string => {
+    const num = ensureNumber(value);
+    return num.toFixed(2);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading booking data...</span>
+      </div>
+    );
+  }
+
+  if (mode === 'edit' && error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-red-500">Error loading booking data</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => navigate('/bookings')}
+        >
+          Back to Bookings
+        </Button>
+      </div>
+    );
+  }
   
   return (
     <div className="animate-fade-in">
@@ -188,7 +399,6 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
       
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Guest Information */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Guest Information</CardTitle>
@@ -216,24 +426,38 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="checked-in">Checked In</SelectItem>
-                      <SelectItem value="checked-out">Checked Out</SelectItem>
+                      <SelectItem value="checked_in">Checked In</SelectItem>
+                      <SelectItem value="checked_out">Checked Out</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
+                      <SelectItem value="no_show">No Show</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="guestName">Guest Name*</Label>
-                <Input
-                  id="guestName"
-                  name="guestName"
-                  value={formData.guestName}
-                  onChange={handleInputChange}
-                  placeholder="Enter guest's full name"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="guestFirstName">First Name*</Label>
+                  <Input
+                    id="guestFirstName"
+                    name="guestFirstName"
+                    value={formData.guestFirstName}
+                    onChange={handleInputChange}
+                    placeholder="Enter guest's first name"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guestLastName">Last Name*</Label>
+                  <Input
+                    id="guestLastName"
+                    name="guestLastName"
+                    value={formData.guestLastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter guest's last name"
+                    required
+                  />
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -259,10 +483,27 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                   />
                 </div>
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="guestDocument">Guest ID/Passport</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="guestDocument"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="flex-1"
+                  />
+                  {formData.guestDocument && (
+                    <p className="text-sm text-muted-foreground">
+                      {formData.guestDocument.name}
+                    </p>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
           
-          {/* Booking Summary */}
           <Card>
             <CardHeader>
               <CardTitle>Booking Summary</CardTitle>
@@ -293,7 +534,7 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                 <div className="space-y-3 pt-3 border-t">
                   <div className="flex justify-between text-sm">
                     <span>Base Rate:</span>
-                    <span>${formData.baseRate.toFixed(2)}</span>
+                    <span>${formatNumber(formData.base_rate)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Nights:</span>
@@ -301,23 +542,23 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
                   </div>
                   <div className="flex justify-between font-medium">
                     <span>Total Amount:</span>
-                    <span>${formData.totalAmount.toFixed(2)}</span>
+                    <span>${formatNumber(formData.total_amount)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Security Deposit:</span>
-                    <span>${formData.securityDeposit.toFixed(2)}</span>
+                    <span>${formatNumber(formData.security_deposit)}</span>
                   </div>
                 </div>
                 
                 <div className="pt-3 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Grand Total:</span>
-                    <span>${(formData.totalAmount + formData.securityDeposit).toFixed(2)}</span>
+                    <span>${formatNumber(formData.total_amount + formData.security_deposit)}</span>
                   </div>
                   
                   <div className="flex justify-between text-sm">
                     <span>Payment Status:</span>
-                    <Select name="paymentStatus" value={formData.paymentStatus} onValueChange={value => setFormData({...formData, paymentStatus: value})}>
+                    <Select name="payment_status" value={formData.payment_status} onValueChange={value => setFormData({...formData, payment_status: value})}>
                       <SelectTrigger className="h-7 w-24">
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
@@ -348,42 +589,33 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
             </CardContent>
           </Card>
           
-          {/* Booking Details */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Booking Details</CardTitle>
               <CardDescription>Enter the booking details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="property">Property*</Label>
-                  <Select name="property" value={formData.property} onValueChange={value => setFormData({...formData, property: value})} required>
-                    <SelectTrigger id="property">
-                      <SelectValue placeholder="Select property" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Marina Tower">Marina Tower</SelectItem>
-                      <SelectItem value="Downtown Heights">Downtown Heights</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="roomNumber">Room Number*</Label>
-                  <Select name="roomNumber" value={formData.roomNumber} onValueChange={value => setFormData({...formData, roomNumber: value})} required>
-                    <SelectTrigger id="roomNumber">
+              <div className="space-y-2">
+                <Label htmlFor="room_id">Room*</Label>
+                {isLoadingRooms ? (
+                  <div className="flex items-center">
+                    <Loader className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm">Loading rooms...</span>
+                  </div>
+                ) : (
+                  <Select name="room_id" value={formData.room_id} onValueChange={handleRoomChange} required>
+                    <SelectTrigger id="room_id">
                       <SelectValue placeholder="Select room" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="101">101</SelectItem>
-                      <SelectItem value="102">102</SelectItem>
-                      <SelectItem value="201">201</SelectItem>
-                      <SelectItem value="202">202</SelectItem>
-                      <SelectItem value="301">301</SelectItem>
-                      <SelectItem value="302">302</SelectItem>
+                      {rooms.map(room => (
+                        <SelectItem key={room.id} value={room.id}>
+                          {room.number} - {room.property || 'Unknown Property'}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                </div>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -455,62 +687,125 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
             </CardContent>
           </Card>
           
-          {/* Financial Details */}
           <Card>
             <CardHeader>
               <CardTitle>Financial Details</CardTitle>
-              <CardDescription>Breakdown of costs and fees</CardDescription>
+              <CardDescription>Payment information and calculations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="baseRate">Base Rate (per night)*</Label>
+                <Label htmlFor="base_rate">Base Rate (per night)*</Label>
                 <Input
-                  id="baseRate"
-                  name="baseRate"
+                  id="base_rate"
+                  name="base_rate"
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.baseRate}
-                  onChange={handleInputChange}
+                  value={formData.base_rate}
+                  onChange={handleNumberChange}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="securityDeposit">Security Deposit</Label>
+                <Label htmlFor="commission">Commission*</Label>
                 <Input
-                  id="securityDeposit"
-                  name="securityDeposit"
+                  id="commission"
+                  name="commission"
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.securityDeposit}
-                  onChange={handleInputChange}
+                  value={formData.commission}
+                  onChange={handleNumberChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tourism_fee">Tourism Fee*</Label>
+                <Input
+                  id="tourism_fee"
+                  name="tourism_fee"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.tourism_fee}
+                  onChange={handleNumberChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vat">VAT*</Label>
+                <Input
+                  id="vat"
+                  name="vat"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.vat}
+                  onChange={handleNumberChange}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="net_to_owner">Net To Owner*</Label>
+                <Input
+                  id="net_to_owner"
+                  name="net_to_owner"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.net_to_owner}
+                  onChange={handleNumberChange}
+                  required
                 />
               </div>
               
-              <div className="pt-3 border-t space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span>Commission (10%):</span>
-                  <span>${formData.commission.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Tourism Fee (3%):</span>
-                  <span>${formData.tourismFee.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>VAT (5%):</span>
-                  <span>${formData.vat.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-medium pt-2 border-t">
-                  <span>Net to Owner:</span>
-                  <span>${formData.netToOwner.toFixed(2)}</span>
+              <div className="space-y-2">
+                <Label htmlFor="security_deposit">Security Deposit</Label>
+                <Input
+                  id="security_deposit"
+                  name="security_deposit"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.security_deposit}
+                  onChange={handleNumberChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="amount_paid">Amount Paid by Guest</Label>
+                <Input
+                  id="amount_paid"
+                  name="amount_paid"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.amount_paid}
+                  onChange={handleNumberChange}
+                />
+              </div>
+
+              <div className="border-t pt-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
+                    <p className="text-lg font-semibold">${formatNumber(formData.total_amount + formData.security_deposit)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Pending Amount</p>
+                    <p className="text-lg font-semibold text-red-600">
+                      ${formatNumber(formData.total_amount + formData.security_deposit - formData.amount_paid)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          {/* Notes */}
           <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>Notes</CardTitle>
@@ -528,7 +823,6 @@ export function AddEditBookingForm({ mode, bookingData }: AddEditBookingFormProp
             </CardContent>
           </Card>
           
-          {/* Submit Buttons */}
           <div className="lg:col-span-3 flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => navigate('/bookings')}>
               Cancel
