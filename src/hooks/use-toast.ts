@@ -1,23 +1,14 @@
 import * as React from "react"
-import {
-  Toast,
-  ToastActionElement,
-  ToastClose,
-  ToastDescription,
-  ToastProvider,
-  ToastTitle,
-  ToastViewport,
-} from "@/components/ui/toast"
+import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
 
-export type ToasterToast = {
+type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-  variant?: "default" | "destructive"
 }
 
 const actionTypes = {
@@ -30,7 +21,7 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  count = (count + 1) % Number.MAX_VALUE
+  count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
 }
 
@@ -47,11 +38,11 @@ type Action =
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: string
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: string
     }
 
 interface State {
@@ -111,12 +102,14 @@ export const reducer = (state: State, action: Action): State => {
           t.id === toastId || toastId === undefined
             ? {
                 ...t,
-                open: false,
+                // For backwards compatibility with react-hot-toast
+                onDismiss: (t.onDismiss as any)?.call?.(null, t),
               }
             : t
         ),
       }
     }
+
     case "REMOVE_TOAST":
       if (action.toastId === undefined) {
         return {
@@ -142,12 +135,20 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+interface Toast {
+  id: string
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+}
 
-function toast({ ...props }: Toast) {
+type ToasterToastOptions = Omit<ToasterToast, "id">
+
+function toast(opts: ToasterToastOptions) {
   const id = genId()
 
-  const update = (props: ToasterToast) =>
+  const update = (props: ToasterToastOptions) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
@@ -157,12 +158,9 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: "ADD_TOAST",
     toast: {
-      ...props,
+      ...opts,
       id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
+      onDismiss: dismiss, // Fix: This is what we pass to the toast component, not 'open'
     },
   })
 
@@ -193,6 +191,6 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+export { toast, useToast }
 
 export type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>

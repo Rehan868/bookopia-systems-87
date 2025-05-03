@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +20,11 @@ import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, AreaChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from '@/components/ui/chart';
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -65,6 +69,44 @@ const Reports = () => {
     { name: 'Airbnb', value: 20 },
     { name: 'Expedia', value: 10 },
   ];
+
+  const chartConfig = {
+    revenue: {
+      label: "Revenue (د.إ)",
+      theme: { 
+        light: "#9b87f5", 
+        dark: "#8B5CF6" 
+      }
+    },
+    expenses: {
+      label: "Expenses (د.إ)",
+      theme: { 
+        light: "#ef4444", 
+        dark: "#ef4444" 
+      }
+    },
+    profit: {
+      label: "Profit (د.إ)",
+      theme: { 
+        light: "#10b981", 
+        dark: "#10b981" 
+      }
+    },
+    occupancy: {
+      label: "Occupancy (%)",
+      theme: { 
+        light: "#8884d8", 
+        dark: "#8884d8" 
+      }
+    },
+    value: {
+      label: "Percentage (%)",
+      theme: { 
+        light: "#6366f1", 
+        dark: "#6366f1" 
+      }
+    }
+  };
 
   return (
     <div className="animate-fade-in">
@@ -127,8 +169,8 @@ const Reports = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Properties</SelectItem>
-              <SelectItem value="marina">Marina Tower</SelectItem>
-              <SelectItem value="downtown">Downtown Heights</SelectItem>
+              <SelectItem value="marina">Marina Heights</SelectItem>
+              <SelectItem value="downtown">Downtown Residence</SelectItem>
             </SelectContent>
           </Select>
           
@@ -161,7 +203,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ChartContainer config={chartConfig}>
                   <BarChart
                     data={revenueData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -169,13 +211,20 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
+                    <ChartTooltip 
+                      content={props => (
+                        <ChartTooltipContent 
+                          {...props} 
+                          formatter={(value, name) => [`د.إ ${value}`, name]}
+                        />
+                      )}
+                    />
                     <Legend />
-                    <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
+                    <Bar dataKey="revenue" fill="#9b87f5" name="Revenue" />
                     <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
-                    <Bar dataKey="profit" fill="#22c55e" name="Profit" />
+                    <Bar dataKey="profit" fill="#10b981" name="Profit" />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </div>
             </CardContent>
           </Card>
@@ -189,7 +238,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ChartContainer config={chartConfig}>
                   <AreaChart
                     data={occupancyData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -197,10 +246,29 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="occupancy" fill="#8884d8" stroke="#8884d8" name="Occupancy %" />
+                    <ChartTooltip 
+                      content={props => (
+                        <ChartTooltipContent 
+                          {...props} 
+                          formatter={(value, name) => [`${value}%`, name]}
+                        />
+                      )}
+                    />
+                    <defs>
+                      <linearGradient id="colorOcc" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area 
+                      type="monotone" 
+                      dataKey="occupancy" 
+                      stroke="#8884d8" 
+                      fill="url(#colorOcc)" 
+                      name="Occupancy"
+                    />
                   </AreaChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </div>
             </CardContent>
           </Card>
@@ -214,7 +282,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
+                <ChartContainer config={chartConfig}>
                   <BarChart
                     data={bookingSourceData}
                     layout="vertical"
@@ -223,11 +291,18 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" />
-                    <Tooltip />
+                    <ChartTooltip 
+                      content={props => (
+                        <ChartTooltipContent 
+                          {...props} 
+                          formatter={(value) => [`${value}%`, "Percentage"]}
+                        />
+                      )}
+                    />
                     <Legend />
                     <Bar dataKey="value" fill="#6366f1" name="Percentage" />
                   </BarChart>
-                </ResponsiveContainer>
+                </ChartContainer>
               </div>
             </CardContent>
           </Card>

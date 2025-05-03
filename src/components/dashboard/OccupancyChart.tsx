@@ -1,7 +1,21 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Legend 
+} from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from '@/components/ui/chart';
 
 // Mock data for the chart - would come from API in real app
 const data = [
@@ -20,6 +34,23 @@ const data = [
 ];
 
 export function OccupancyChart() {
+  const chartConfig = {
+    occupancy: {
+      label: "Occupancy Rate (%)",
+      theme: { 
+        light: "#9b87f5", 
+        dark: "#8B5CF6" 
+      }
+    },
+    revenue: {
+      label: "Revenue (د.إ)",
+      theme: { 
+        light: "#10b981", 
+        dark: "#10b981" 
+      }
+    }
+  };
+
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:shadow-md">
       <CardHeader className="pb-4">
@@ -28,21 +59,22 @@ export function OccupancyChart() {
       </CardHeader>
       <CardContent>
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig}>
             <AreaChart
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="colorOccupancy" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#9b87f5" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#9b87f5" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                 </linearGradient>
               </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
                 dataKey="name" 
                 axisLine={false}
@@ -54,24 +86,26 @@ export function OccupancyChart() {
                 tickLine={false}
                 style={{ fontSize: '12px' }}
               />
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'white', 
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1)',
-                  border: 'none'
-                }}
-                labelStyle={{ fontWeight: 'bold', marginBottom: '4px' }}
+              <ChartTooltip 
+                content={(props) => (
+                  <ChartTooltipContent 
+                    {...props}
+                    formatter={(value, name) => {
+                      return name === "Revenue" 
+                        ? [`د.إ ${value}`, "Revenue"] 
+                        : [`${value}%`, "Occupancy Rate"];
+                    }}
+                  />
+                )}
               />
               <Legend />
               <Area 
                 type="monotone" 
                 dataKey="occupancy" 
-                stroke="#3b82f6" 
+                stroke="#9b87f5" 
                 fillOpacity={1} 
                 fill="url(#colorOccupancy)" 
-                name="Occupancy Rate (%)"
+                name="Occupancy"
               />
               <Area 
                 type="monotone" 
@@ -79,10 +113,10 @@ export function OccupancyChart() {
                 stroke="#10b981" 
                 fillOpacity={1} 
                 fill="url(#colorRevenue)" 
-                name="Revenue ($)"
+                name="Revenue"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

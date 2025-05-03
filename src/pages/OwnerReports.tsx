@@ -20,7 +20,7 @@ const bookingSourceData = [
   { name: 'Expedia', value: 10 },
 ];
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#9b87f5', '#10b981', '#FFBB28', '#FF8042'];
 
 const OwnerReports = () => {
   return (
@@ -45,15 +45,15 @@ const OwnerReports = () => {
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
-                  <YAxis yAxisId="left" orientation="left" stroke="#0088FE" />
-                  <YAxis yAxisId="right" orientation="right" stroke="#00C49F" />
+                  <YAxis yAxisId="left" orientation="left" stroke="#9b87f5" />
+                  <YAxis yAxisId="right" orientation="right" stroke="#10b981" />
                   <Tooltip formatter={(value, name) => [
                     name === "Revenue (د.إ)" ? `د.إ ${value}` : `${value}%`,
                     name
                   ]}/>
                   <Legend />
-                  <Bar yAxisId="left" dataKey="revenue" name="Revenue (د.إ)" fill="#0088FE" />
-                  <Bar yAxisId="right" dataKey="occupancy" name="Occupancy (%)" fill="#00C49F" />
+                  <Bar yAxisId="left" dataKey="revenue" name="Revenue (د.إ)" fill="#9b87f5" />
+                  <Bar yAxisId="right" dataKey="occupancy" name="Occupancy (%)" fill="#10b981" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
