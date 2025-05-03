@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useRooms } from '@/hooks/useRooms';
 import { SearchAndFilter } from '@/components/ui/SearchAndFilter';
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Fix: Make sure we're using the correct import for useToast
+// import { useToast } from "@/components/ui/use-toast";
 
 type OwnerFormData = {
   firstName: string;
