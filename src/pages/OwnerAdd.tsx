@@ -20,9 +20,6 @@ import { useRooms } from '@/hooks/useRooms';
 import { SearchAndFilter } from '@/components/ui/SearchAndFilter';
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Fix: Make sure we're using the correct import for useToast
-// import { useToast } from "@/components/ui/use-toast";
-
 type OwnerFormData = {
   firstName: string;
   lastName: string;
@@ -88,6 +85,8 @@ const OwnerAdd = () => {
     room.property.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Fixed: Removed the handleRoomSelect logic from the onClick handler
+  // and moved it to the onCheckedChange of the Checkbox component
   const handleRoomSelect = (roomId: string) => {
     setSelectedRooms(prev => {
       if (prev.includes(roomId)) {
@@ -630,7 +629,7 @@ const OwnerAdd = () => {
                               ? "border-primary bg-primary/5" 
                               : "hover:bg-accent"
                           )}
-                          onClick={() => handleRoomSelect(room.id)}
+                          // Fixed: Removed onClick handler here to avoid infinite loop
                         >
                           <div>
                             <h4 className="font-medium">Room {room.number}</h4>
@@ -638,6 +637,7 @@ const OwnerAdd = () => {
                           </div>
                           <Checkbox
                             checked={selectedRooms.includes(room.id)}
+                            // Fixed: Use onCheckedChange instead of direct state modification
                             onCheckedChange={() => handleRoomSelect(room.id)}
                           />
                         </div>
