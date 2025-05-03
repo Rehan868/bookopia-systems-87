@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
 
 type UserFormData = {
   name: string;
@@ -22,14 +24,16 @@ type UserFormData = {
 const UserAdd = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { staffSignup } = useAuth();
   const [formData, setFormData] = useState<UserFormData>({
     name: '',
     email: '',
-    role: '',
+    role: 'agent',
     password: '',
     confirmPassword: '',
     sendInvite: true,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,7 +66,7 @@ const UserAdd = () => {
       .toUpperCase();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -74,16 +78,36 @@ const UserAdd = () => {
       });
       return;
     }
+
+    if (formData.password.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    // In a real app, this would send the data to an API
-    console.log('Submitting user:', formData);
+    setIsSubmitting(true);
     
-    toast({
-      title: "User Added",
-      description: `${formData.name} has been added successfully.${formData.sendInvite ? ' An invitation email has been sent.' : ''}`,
-    });
-    
-    navigate('/users');
+    try {
+      await staffSignup(
+        formData.email, 
+        formData.password, 
+        formData.name, 
+        formData.role
+      );
+      
+      toast({
+        title: "User Added",
+        description: `${formData.name} has been added successfully.${formData.sendInvite ? ' An invitation email has been sent.' : ''}`,
+      });
+      
+      navigate('/users');
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -128,16 +152,17 @@ const UserAdd = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="role">Role*</Label>
-                <Select onValueChange={handleRoleChange} required>
+                <Select 
+                  value={formData.role} 
+                  onValueChange={handleRoleChange} 
+                  required
+                >
                   <SelectTrigger id="role">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Booking Agent">Booking Agent</SelectItem>
-                    <SelectItem value="Owner">Owner</SelectItem>
-                    <SelectItem value="Cleaning Staff">Cleaning Staff</SelectItem>
-                    <SelectItem value="Maintenance">Maintenance</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="agent">Agent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -188,7 +213,7 @@ const UserAdd = () => {
                 <p className="text-muted-foreground">{formData.email || 'email@example.com'}</p>
                 {formData.role && (
                   <Badge className="mt-2" variant="outline">
-                    {formData.role}
+                    {formData.role === 'admin' ? 'Admin' : 'Agent'}
                   </Badge>
                 )}
               </div>
@@ -211,23 +236,11 @@ const UserAdd = () => {
                 <div className="p-4 bg-blue-50 rounded-md">
                   <h4 className="font-medium text-blue-800 mb-2">Role Information</h4>
                   <div className="text-sm text-blue-700">
-                    {formData.role === 'Admin' && (
+                    {formData.role === 'admin' && (
                       <p>Admins have full access to all features and can manage other users.</p>
                     )}
-                    {formData.role === 'Booking Agent' && (
-                      <p>Booking Agents can create and manage bookings, but cannot access financial information.</p>
-                    )}
-                    {formData.role === 'Owner' && (
-                      <p>Owners can view their properties and bookings, but cannot make changes to the system.</p>
-                    )}
-                    {formData.role === 'Cleaning Staff' && (
-                      <p>Cleaning Staff can update room cleaning status but have limited access to other features.</p>
-                    )}
-                    {formData.role === 'Maintenance' && (
-                      <p>Maintenance staff can manage maintenance requests and update their status.</p>
-                    )}
-                    {!formData.role && (
-                      <p>Select a role to see information about its permissions.</p>
+                    {formData.role === 'agent' && (
+                      <p>Agents can create and manage bookings, but cannot access users, owners, audit logs, settings, or delete records.</p>
                     )}
                   </div>
                 </div>
@@ -239,8 +252,8 @@ const UserAdd = () => {
             <Button type="button" variant="outline" onClick={() => navigate('/users')}>
               Cancel
             </Button>
-            <Button type="submit">
-              Add User
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Adding User...' : 'Add User'}
             </Button>
           </div>
         </div>

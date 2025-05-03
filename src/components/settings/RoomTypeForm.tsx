@@ -1,136 +1,202 @@
 
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
-import { Switch } from '@/components/ui/switch';
 
 interface RoomTypeFormProps {
   typeId?: string;
 }
 
 const RoomTypeForm: React.FC<RoomTypeFormProps> = ({ typeId }) => {
-  const [roomType, setRoomType] = useState({
-    id: '',
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [properties, setProperties] = useState<any[]>([]);
+  const [formData, setFormData] = useState({
     name: '',
     description: '',
-    maxOccupancy: 2,
-    basePricePerNight: 150,
-    active: true,  // Boolean value for the Switch component
+    baseRate: '',
+    propertyId: '',
+    active: true,
+    features: [] as string[]
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
+  
   useEffect(() => {
-    if (typeId) {
-      // Mock loading data - in a real app would fetch from API
-      setIsLoading(true);
-      setTimeout(() => {
-        setRoomType({
-          id: typeId,
-          name: 'Deluxe Suite',
-          description: 'Spacious suite with sea view and private balcony',
-          maxOccupancy: 3,
-          basePricePerNight: 250,
-          active: true,
-        });
-        setIsLoading(false);
-      }, 500);
-    }
-  }, [typeId]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    // Fetch properties
+    const fetchProperties = async () => {
+      // In a real app, fetch from API
+      setProperties([
+        { id: "1", name: "Marina Tower" },
+        { id: "2", name: "Downtown Heights" }
+      ]);
+    };
     
-    // Mock save - in a real app would call API
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: typeId ? 'Room Type Updated' : 'Room Type Created',
-        description: `${roomType.name} has been ${typeId ? 'updated' : 'created'} successfully.`,
-      });
-    }, 500);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{typeId ? 'Edit Room Type' : 'New Room Type'}</CardTitle>
-          <CardDescription>
-            {typeId ? 'Update room type information' : 'Create a new room type in the system'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Room Type Name</Label>
-            <Input 
-              id="name" 
-              value={roomType.name} 
-              onChange={(e) => setRoomType({...roomType, name: e.target.value})}
-              placeholder="Enter room type name"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea 
-              id="description" 
-              value={roomType.description} 
-              onChange={(e) => setRoomType({...roomType, description: e.target.value})}
-              placeholder="Enter room type description"
-              className="min-h-[100px]"
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="maxOccupancy">Max Occupancy</Label>
-              <Input 
-                id="maxOccupancy" 
-                type="number"
-                min="1"
-                value={roomType.maxOccupancy} 
-                onChange={(e) => setRoomType({...roomType, maxOccupancy: parseInt(e.target.value)})}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="basePricePerNight">Base Price Per Night (د.إ)</Label>
-              <Input 
-                id="basePricePerNight" 
-                type="number"
-                min="0"
-                step="0.01"
-                value={roomType.basePricePerNight} 
-                onChange={(e) => setRoomType({...roomType, basePricePerNight: parseFloat(e.target.value)})}
-                required
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="active" 
-              checked={roomType.active}
-              onCheckedChange={(checked) => setRoomType({...roomType, active: checked})}
-            />
-            <Label htmlFor="active">Active</Label>
-          </div>
-        </CardContent>
-      </Card>
+    fetchProperties();
+    
+    // If editing, fetch room type data
+    if (typeId) {
+      const fetchRoomType = async () => {
+        setIsLoading(true);
+        try {
+          // In a real app, fetch from API
+          // Mocking response
+          setFormData({
+            name: 'Deluxe Room',
+            description: 'Spacious room with sea view',
+            baseRate: '450',
+            propertyId: '1',
+            active: true,
+            features: ['Sea View', 'King Size Bed', 'Balcony']
+          });
+        } catch (error) {
+          console.error("Error fetching room type:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load room type data",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
       
-      <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline">Cancel</Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : typeId ? 'Update Room Type' : 'Create Room Type'}
-        </Button>
+      fetchRoomType();
+    }
+  }, [typeId, toast]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handlePropertyChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      propertyId: value
+    }));
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      // In a real app, send data to API
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      
+      toast({
+        title: typeId ? "Room Type Updated" : "Room Type Created",
+        description: `Room type has been ${typeId ? 'updated' : 'created'} successfully.`
+      });
+      
+      navigate('/settings');
+    } catch (error) {
+      console.error("Error saving room type:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save room type",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input 
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter room type name"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="baseRate">Base Rate (AED)</Label>
+                  <Input 
+                    id="baseRate"
+                    name="baseRate"
+                    type="number"
+                    value={formData.baseRate}
+                    onChange={handleInputChange}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="property">Property</Label>
+                <Select 
+                  value={formData.propertyId} 
+                  onValueChange={handlePropertyChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map(property => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Enter room type description"
+                  rows={4}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/settings')}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Saving...' : typeId ? 'Update Room Type' : 'Create Room Type'}
+          </Button>
+        </div>
       </div>
     </form>
   );

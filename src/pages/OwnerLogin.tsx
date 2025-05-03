@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,16 @@ export default function OwnerLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { ownerLogin } = useAuth();
+  const { ownerLogin, isAuthenticated, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.userType === 'owner') {
+        navigate('/owner/dashboard');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,18 +40,10 @@ export default function OwnerLogin() {
     
     try {
       await ownerLogin(email, password);
-      toast({
-        title: "Success!",
-        description: "You have successfully logged in."
-      });
-      navigate('/owner/dashboard');
+      // Navigation will happen automatically in auth state change handler
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Invalid credentials. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
+      console.error('Login error:', error);
+      // Toast is already shown in the login function
       setIsLoading(false);
     }
   };
