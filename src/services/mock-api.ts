@@ -243,6 +243,26 @@ export const getCleaningTasks = async (): Promise<CleaningTask[]> => {
   });
 };
 
+export const deleteBooking = async (id: string): Promise<{ success: boolean }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, actually delete from the DB
+      console.log(`Mock delete booking with ID: ${id}`);
+      resolve({ success: true });
+    }, 500);
+  });
+};
+
+export const updateBookingStatus = async (id: string, status: string): Promise<{ success: boolean }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // In a real app, update the status in the DB
+      console.log(`Mock update booking status: ID ${id} to ${status}`);
+      resolve({ success: true });
+    }, 500);
+  });
+};
+
 // Mock API for properties
 export const getProperties = async () => {
   return new Promise((resolve) => {

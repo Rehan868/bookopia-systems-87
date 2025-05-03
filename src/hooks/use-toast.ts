@@ -1,5 +1,15 @@
 import * as React from "react"
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
+
+type ToastActionElement = React.ReactElement<HTMLButtonElement>
+
+export type ToastProps = {
+  id: string
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+  onClose?: () => void
+}
 
 const TOAST_LIMIT = 5
 const TOAST_REMOVE_DELAY = 1000000
@@ -103,7 +113,7 @@ export const reducer = (state: State, action: Action): State => {
             ? {
                 ...t,
                 // For backwards compatibility with react-hot-toast
-                onDismiss: (t.onDismiss as any)?.call?.(null, t),
+                onClose: t.onClose ? t.onClose() : undefined,
               }
             : t
         ),
@@ -160,7 +170,7 @@ function toast(opts: ToasterToastOptions) {
     toast: {
       ...opts,
       id,
-      onDismiss: dismiss, // Fix: This is what we pass to the toast component, not 'open'
+      onClose: dismiss,
     },
   })
 
@@ -192,5 +202,3 @@ function useToast() {
 }
 
 export { toast, useToast }
-
-export type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>

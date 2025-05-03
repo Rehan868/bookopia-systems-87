@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useBooking } from '@/hooks/useBookings';
-import { fetchRooms } from '@/services/api';
+import { fetchRooms, saveBooking } from '@/services/api';
 import { Booking, Guest, Room } from '@/services/supabase-types';
 
 interface BookingFormData {
@@ -49,6 +49,7 @@ interface BookingFormData {
 interface AddEditBookingFormProps {
   mode: 'add' | 'edit';
   bookingId?: string;
+  defaultValues?: any;
 }
 
 // Helper function to ensure values are numbers
@@ -61,15 +62,15 @@ const ensureNumber = (val: any): number => {
   return 0;
 };
 
-export function AddEditBookingForm({ mode }: AddEditBookingFormProps) {
+export function AddEditBookingForm({ mode, bookingId, defaultValues }: AddEditBookingFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { id } = useParams<{ id: string }>();
-  const { data: bookingData, isLoading, error, saveBooking } = useBooking(mode === 'edit' ? id : undefined);
+  const { data: bookingData, isLoading, error } = useBooking(mode === 'edit' ? bookingId || '' : '');
   
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState<boolean>(true);
   
+  // Initialize form data from defaultValues or with defaults
   const [formData, setFormData] = useState<BookingFormData>({
     reference: mode === 'edit' ? '' : `BK-${Date.now().toString().slice(-6)}`,
     room_id: '',
@@ -122,17 +123,20 @@ export function AddEditBookingForm({ mode }: AddEditBookingFormProps) {
   
   // Populate form with booking data when in edit mode
   useEffect(() => {
-    if (mode === 'edit' && bookingData) {
+    if (mode === 'edit' && (defaultValues || bookingData)) {
+      const data = defaultValues || bookingData;
+      if (!data) return;
+      
       let firstN = '';
       let lastN = '';
       
       // Extract first and last name from the guest data
-      if (bookingData.guests) {
-        firstN = bookingData.guests.first_name || '';
-        lastN = bookingData.guests.last_name || '';
-      } else if (bookingData.guest_name) {
+      if (data.guests) {
+        firstN = data.guests.first_name || '';
+        lastN = data.guests.last_name || '';
+      } else if (data.guest_name) {
         // If we only have a combined name, make a best guess at splitting it
-        const nameParts = bookingData.guest_name.split(' ');
+        const nameParts = data.guest_name.split(' ');
         if (nameParts.length > 1) {
           firstN = nameParts[0];
           lastN = nameParts.slice(1).join(' ');
@@ -142,39 +146,39 @@ export function AddEditBookingForm({ mode }: AddEditBookingFormProps) {
       }
       
       setFormData({
-        reference: bookingData.reference || '',
-        room_id: bookingData.room_id || '',
+        reference: data.reference || '',
+        room_id: data.room_id || '',
         guestFirstName: firstN,
         guestLastName: lastN,
-        guestEmail: bookingData.guests?.email || '',
-        guestPhone: bookingData.guests?.phone || '',
+        guestEmail: data.guests?.email || '',
+        guestPhone: data.guests?.phone || '',
         property: '',  // Will be set when rooms are loaded
-        roomNumber: bookingData.rooms?.number || '',
-        checkIn: bookingData.check_in_date ? parseISO(bookingData.check_in_date) : new Date(),
-        checkOut: bookingData.check_out_date ? parseISO(bookingData.check_out_date) : new Date(),
-        adults: ensureNumber(bookingData.adults) || 2,
-        children: ensureNumber(bookingData.children) || 0,
-        base_rate: ensureNumber(bookingData.base_rate) || 0,
-        total_amount: ensureNumber(bookingData.total_amount) || 0,
-        security_deposit: ensureNumber(bookingData.security_deposit) || 100,
-        commission: ensureNumber(bookingData.commission) || 0,
-        tourism_fee: ensureNumber(bookingData.tourism_fee) || 0,
-        vat: ensureNumber(bookingData.vat) || 0,
-        net_to_owner: ensureNumber(bookingData.net_to_owner) || 0,
-        notes: bookingData.notes || '',
-        status: bookingData.status || 'confirmed',
-        payment_status: bookingData.payment_status || 'pending',
+        roomNumber: data.rooms?.number || '',
+        checkIn: data.check_in_date ? parseISO(data.check_in_date) : new Date(),
+        checkOut: data.check_out_date ? parseISO(data.check_out_date) : new Date(),
+        adults: ensureNumber(data.adults) || 2,
+        children: ensureNumber(data.children) || 0,
+        base_rate: ensureNumber(data.base_rate) || 0,
+        total_amount: ensureNumber(data.total_amount) || 0,
+        security_deposit: ensureNumber(data.security_deposit) || 100,
+        commission: ensureNumber(data.commission) || 0,
+        tourism_fee: ensureNumber(data.tourism_fee) || 0,
+        vat: ensureNumber(data.vat) || 0,
+        net_to_owner: ensureNumber(data.net_to_owner) || 0,
+        notes: data.notes || '',
+        status: data.status || 'confirmed',
+        payment_status: data.payment_status || 'pending',
         sendConfirmation: true,
         guestDocument: null,
-        amount_paid: ensureNumber(bookingData.amount_paid) || 0,
+        amount_paid: ensureNumber(data.amount_paid) || 0,
       });
       
       setDateRange({
-        from: bookingData.check_in_date ? parseISO(bookingData.check_in_date) : new Date(),
-        to: bookingData.check_out_date ? parseISO(bookingData.check_out_date) : new Date(),
+        from: data.check_in_date ? parseISO(data.check_in_date) : new Date(),
+        to: data.check_out_date ? parseISO(data.check_out_date) : new Date(),
       });
     }
-  }, [bookingData, mode]);
+  }, [bookingData, defaultValues, mode]);
   
   // Set property based on room selection when rooms are loaded
   useEffect(() => {

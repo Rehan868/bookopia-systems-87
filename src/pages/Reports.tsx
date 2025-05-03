@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,12 +20,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, AreaChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent
-} from '@/components/ui/chart';
+import { BarChart, AreaChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, TooltipProps } from 'recharts';
+
+// Fixed type definitions for charts
+type ValueType = string | number | Array<string | number>;
+type NameType = string | number;
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -70,42 +70,55 @@ const Reports = () => {
     { name: 'Expedia', value: 10 },
   ];
 
-  const chartConfig = {
-    revenue: {
-      label: "Revenue (د.إ)",
-      theme: { 
-        light: "#9b87f5", 
-        dark: "#8B5CF6" 
-      }
-    },
-    expenses: {
-      label: "Expenses (د.إ)",
-      theme: { 
-        light: "#ef4444", 
-        dark: "#ef4444" 
-      }
-    },
-    profit: {
-      label: "Profit (د.إ)",
-      theme: { 
-        light: "#10b981", 
-        dark: "#10b981" 
-      }
-    },
-    occupancy: {
-      label: "Occupancy (%)",
-      theme: { 
-        light: "#8884d8", 
-        dark: "#8884d8" 
-      }
-    },
-    value: {
-      label: "Percentage (%)",
-      theme: { 
-        light: "#6366f1", 
-        dark: "#6366f1" 
-      }
+  // Custom tooltip component for recharts
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 shadow-sm rounded-md">
+          <p className="font-medium">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {entry.name}: {typeof entry.value === 'number' ? `د.إ ${entry.value}` : entry.value}
+            </p>
+          ))}
+        </div>
+      );
     }
+    return null;
+  };
+
+  // Custom tooltip for occupancy
+  const OccupancyTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 shadow-sm rounded-md">
+          <p className="font-medium">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {entry.name}: {`${entry.value}%`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for booking sources
+  const BookingSourceTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-200 shadow-sm rounded-md">
+          <p className="font-medium">{payload[0]?.payload?.name}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {`${entry.value}%`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -158,6 +171,7 @@ const Reports = () => {
                   selected={dateRange}
                   onSelect={setDateRange}
                   numberOfMonths={2}
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -203,7 +217,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={revenueData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -211,20 +225,13 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <ChartTooltip 
-                      content={props => (
-                        <ChartTooltipContent 
-                          {...props} 
-                          formatter={(value, name) => [`د.إ ${value}`, name]}
-                        />
-                      )}
-                    />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     <Bar dataKey="revenue" fill="#9b87f5" name="Revenue" />
                     <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
                     <Bar dataKey="profit" fill="#10b981" name="Profit" />
                   </BarChart>
-                </ChartContainer>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -238,7 +245,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={occupancyData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -246,14 +253,7 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <ChartTooltip 
-                      content={props => (
-                        <ChartTooltipContent 
-                          {...props} 
-                          formatter={(value, name) => [`${value}%`, name]}
-                        />
-                      )}
-                    />
+                    <Tooltip content={<OccupancyTooltip />} />
                     <defs>
                       <linearGradient id="colorOcc" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
@@ -268,7 +268,7 @@ const Reports = () => {
                       name="Occupancy"
                     />
                   </AreaChart>
-                </ChartContainer>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -282,7 +282,7 @@ const Reports = () => {
             </CardHeader>
             <CardContent>
               <div className="h-80">
-                <ChartContainer config={chartConfig}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={bookingSourceData}
                     layout="vertical"
@@ -291,18 +291,11 @@ const Reports = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis dataKey="name" type="category" />
-                    <ChartTooltip 
-                      content={props => (
-                        <ChartTooltipContent 
-                          {...props} 
-                          formatter={(value) => [`${value}%`, "Percentage"]}
-                        />
-                      )}
-                    />
+                    <Tooltip content={<BookingSourceTooltip />} />
                     <Legend />
                     <Bar dataKey="value" fill="#6366f1" name="Percentage" />
                   </BarChart>
-                </ChartContainer>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -323,7 +316,7 @@ const Reports = () => {
                   <p className="text-sm text-muted-foreground">Downtown Heights</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">$12,450</p>
+                  <p className="font-medium">د.إ 12,450</p>
                   <p className="text-sm text-muted-foreground">92% Occupancy</p>
                 </div>
               </div>
@@ -333,7 +326,7 @@ const Reports = () => {
                   <p className="text-sm text-muted-foreground">Marina Tower</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">$10,820</p>
+                  <p className="font-medium">د.إ 10,820</p>
                   <p className="text-sm text-muted-foreground">87% Occupancy</p>
                 </div>
               </div>
@@ -343,7 +336,7 @@ const Reports = () => {
                   <p className="text-sm text-muted-foreground">Downtown Heights</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium">$9,675</p>
+                  <p className="font-medium">د.إ 9,675</p>
                   <p className="text-sm text-muted-foreground">84% Occupancy</p>
                 </div>
               </div>

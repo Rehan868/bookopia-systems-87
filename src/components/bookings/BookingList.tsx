@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { CreditCard, Trash2, FileText } from 'lucide-react';
-import { deleteBooking, updateBookingStatus } from '@/services/mock-api';
+import { deleteBooking, updateBookingStatus } from '@/services/api';
 
 function formatDate(dateString: string) {
   try {
