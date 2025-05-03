@@ -47,9 +47,12 @@ const OwnerReports = () => {
                   <XAxis dataKey="name" />
                   <YAxis yAxisId="left" orientation="left" stroke="#0088FE" />
                   <YAxis yAxisId="right" orientation="right" stroke="#00C49F" />
-                  <Tooltip />
+                  <Tooltip formatter={(value, name) => [
+                    name === "Revenue (د.إ)" ? `د.إ ${value}` : `${value}%`,
+                    name
+                  ]}/>
                   <Legend />
-                  <Bar yAxisId="left" dataKey="revenue" name="Revenue ($)" fill="#0088FE" />
+                  <Bar yAxisId="left" dataKey="revenue" name="Revenue (د.إ)" fill="#0088FE" />
                   <Bar yAxisId="right" dataKey="occupancy" name="Occupancy (%)" fill="#00C49F" />
                 </BarChart>
               </ResponsiveContainer>

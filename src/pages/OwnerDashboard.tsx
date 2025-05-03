@@ -28,7 +28,7 @@ const useOwnerData = () => {
     checkins: 2,
     checkouts: 1,
     occupancyRate: "62%",
-    revenue: "$3,240",
+    revenue: "د.إ 3,240",
   };
 };
 
@@ -79,7 +79,7 @@ const OwnerDashboard = () => {
           value={ownerData.revenue} 
           icon={DollarSign}
           trend="up"
-          trendValue="+$420 from last month"
+          trendValue="+د.إ 420 from last month"
           className="animate-slide-up [animation-delay:400ms]"
         />
         <div className="flex flex-col gap-2 p-6 border rounded-lg shadow-sm bg-card animate-slide-up [animation-delay:500ms]">

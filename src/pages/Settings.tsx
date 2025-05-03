@@ -71,7 +71,7 @@ const Settings = () => {
   const [companyName, setCompanyName] = useState('HotelManager Co.');
   const [companyEmail, setCompanyEmail] = useState('info@hotelmanager.com');
   const [dateFormat, setDateFormat] = useState('MM/DD/YYYY');
-  const [currencyFormat, setCurrencyFormat] = useState('USD');
+  const [currencyFormat, setCurrencyFormat] = useState('AED');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [autoCheckout, setAutoCheckout] = useState(true);
   
@@ -284,6 +284,7 @@ const Settings = () => {
                         <SelectValue placeholder="Select currency" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="AED">AED (د.إ)</SelectItem>
                         <SelectItem value="USD">USD ($)</SelectItem>
                         <SelectItem value="EUR">EUR (€)</SelectItem>
                         <SelectItem value="GBP">GBP (£)</SelectItem>

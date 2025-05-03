@@ -17,24 +17,24 @@ const BookingEdit = () => {
       // Format the booking data to match the expected structure for the form
       // Ensure all numeric fields are actually numbers
       setFormattedBookingData({
-        reference: bookingData.booking_number || '',
+        reference: bookingData.booking_ref || '',
         guestName: bookingData.guest_name || '',
-        guestEmail: bookingData.guestEmail || '',
-        guestPhone: bookingData.guestPhone || '',
-        property: bookingData.rooms?.property || '',
+        guestEmail: bookingData.guest_email || '',
+        guestPhone: bookingData.guest_phone || '',
+        property: bookingData.rooms?.property_name || '',
         roomNumber: bookingData.rooms?.number || '',
-        checkIn: new Date(bookingData.check_in),
-        checkOut: new Date(bookingData.check_out),
+        checkIn: new Date(bookingData.check_in_date),
+        checkOut: new Date(bookingData.check_out_date),
         adults: Number(bookingData.adults || 2),
         children: Number(bookingData.children || 0),
-        baseRate: Number(bookingData.baseRate || 150),
-        totalAmount: Number(bookingData.amount || 450),
-        securityDeposit: Number(bookingData.securityDeposit || 0),
+        baseRate: Number(bookingData.base_rate || 150),
+        totalAmount: Number(bookingData.total_amount || 450),
+        securityDeposit: Number(bookingData.security_deposit || 0),
         commission: Number(bookingData.commission || 0),
-        tourismFee: Number(bookingData.tourismFee || 0),
+        tourismFee: Number(bookingData.tourism_fee || 0),
         vat: Number(bookingData.vat || 0),
-        netToOwner: Number(bookingData.netToOwner || 0),
-        notes: bookingData.special_requests || '',
+        netToOwner: Number(bookingData.net_to_owner || 0),
+        notes: bookingData.notes || '',
         status: bookingData.status || 'confirmed',
         paymentStatus: bookingData.payment_status || 'paid',
         sendConfirmation: true,
@@ -86,7 +86,7 @@ const BookingEdit = () => {
   
   // Only render the form when we have the formatted data
   return formattedBookingData ? (
-    <AddEditBookingForm mode="edit" bookingData={formattedBookingData} />
+    <AddEditBookingForm mode="edit" bookingId={id} bookingData={formattedBookingData} />
   ) : null;
 };
 

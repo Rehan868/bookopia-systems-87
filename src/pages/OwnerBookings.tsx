@@ -106,7 +106,7 @@ const OwnerBookings = () => {
                 <TableCell>{booking.room_number}</TableCell>
                 <TableCell>{format(new Date(booking.check_in), 'MMM d, yyyy')}</TableCell>
                 <TableCell>{format(new Date(booking.check_out), 'MMM d, yyyy')}</TableCell>
-                <TableCell>${booking.amount.toFixed(2)}</TableCell>
+                <TableCell>د.إ {booking.amount.toFixed(2)}</TableCell>
                 <TableCell>
                   <Badge 
                     variant="outline" 
