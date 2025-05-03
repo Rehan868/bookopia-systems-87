@@ -67,32 +67,32 @@ export function BookingDetails() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h3 className="font-medium">Booking Reference</h3>
-                <p className="text-muted-foreground">{booking.booking_ref}</p>
+                <p className="text-muted-foreground">{booking?.booking_ref}</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-medium">Status</h3>
-                <p className="text-muted-foreground">{booking.status}</p>
+                <p className="text-muted-foreground">{booking?.status}</p>
               </div>
             </div>
 
             <div className="space-y-2">
               <h3 className="font-medium">Guest Name</h3>
-              <p className="text-muted-foreground">{booking.guest_name}</p>
+              <p className="text-muted-foreground">{booking?.guest_name}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h3 className="font-medium">Email Address</h3>
-                <p className="text-muted-foreground">{booking.guest_email}</p>
+                <p className="text-muted-foreground">{booking?.guest_email}</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-medium">Phone Number</h3>
-                <p className="text-muted-foreground">{booking.guest_phone}</p>
+                <p className="text-muted-foreground">{booking?.guest_phone}</p>
               </div>
             </div>
 
             {/* Display Guest Document only if it exists */}
-            {booking.guest_document && (
+            {booking?.guest_document && (
               <div className="mt-4">
                 <h3 className="font-medium mb-2">Guest ID/Passport</h3>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -120,12 +120,12 @@ export function BookingDetails() {
               <div className="font-medium text-blue-800">Stay Information</div>
               <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
                 <div>Check-in</div>
-                <div className="text-right font-medium">{booking.check_in_date}</div>
+                <div className="text-right font-medium">{booking?.check_in_date}</div>
                 <div>Check-out</div>
-                <div className="text-right font-medium">{booking.check_out_date}</div>
+                <div className="text-right font-medium">{booking?.check_out_date}</div>
                 <div>Guests</div>
                 <div className="text-right font-medium">
-                  {Number(booking.adults || 0) + Number(booking.children || 0)} ({Number(booking.adults || 0)} adults, {Number(booking.children || 0)} children)
+                  {Number(booking?.adults || 0) + Number(booking?.children || 0)} ({Number(booking?.adults || 0)} adults, {Number(booking?.children || 0)} children)
                 </div>
               </div>
             </div>
@@ -133,15 +133,15 @@ export function BookingDetails() {
             <div className="space-y-3 pt-3 border-t">
               <div className="flex justify-between text-sm">
                 <span>Base Rate:</span>
-                <span>د.إ {formatNumber(booking.base_rate)}</span>
+                <span>د.إ {formatNumber(booking?.base_rate)}</span>
               </div>
               <div className="flex justify-between font-medium">
                 <span>Total Amount:</span>
-                <span>د.إ {formatNumber(booking.total_amount)}</span>
+                <span>د.إ {formatNumber(booking?.total_amount)}</span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Security Deposit:</span>
-                <span>د.إ {formatNumber(booking.security_deposit)}</span>
+                <span>د.إ {formatNumber(booking?.security_deposit)}</span>
               </div>
             </div>
           </CardContent>
@@ -157,11 +157,11 @@ export function BookingDetails() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <h3 className="font-medium">Property</h3>
-                <p className="text-muted-foreground">{booking.rooms?.property_name}</p>
+                <p className="text-muted-foreground">{booking?.rooms?.property_name}</p>
               </div>
               <div className="space-y-2">
                 <h3 className="font-medium">Room Number</h3>
-                <p className="text-muted-foreground">{booking.rooms?.number}</p>
+                <p className="text-muted-foreground">{booking?.rooms?.number}</p>
               </div>
             </div>
           </CardContent>
@@ -176,23 +176,23 @@ export function BookingDetails() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-medium">Commission</h3>
-              <p className="text-muted-foreground">د.إ {formatNumber(booking.commission)}</p>
+              <p className="text-muted-foreground">د.إ {formatNumber(booking?.commission)}</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-medium">Tourism Fee</h3>
-              <p className="text-muted-foreground">د.إ {formatNumber(booking.tourism_fee)}</p>
+              <p className="text-muted-foreground">د.إ {formatNumber(booking?.tourism_fee)}</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-medium">VAT</h3>
-              <p className="text-muted-foreground">د.إ {formatNumber(booking.vat)}</p>
+              <p className="text-muted-foreground">د.إ {formatNumber(booking?.vat)}</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-medium">Net To Owner</h3>
-              <p className="text-muted-foreground">د.إ {formatNumber(booking.net_to_owner)}</p>
+              <p className="text-muted-foreground">د.إ {formatNumber(booking?.net_to_owner)}</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-medium">Payment Status</h3>
-              <p className="text-muted-foreground">{booking.payment_status}</p>
+              <p className="text-muted-foreground">{booking?.payment_status}</p>
             </div>
           </CardContent>
         </Card>
@@ -204,7 +204,7 @@ export function BookingDetails() {
             <CardDescription>Additional notes and special requests</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{booking.notes || 'No notes available'}</p>
+            <p className="text-muted-foreground">{booking?.notes || 'No notes available'}</p>
           </CardContent>
         </Card>
       </div>

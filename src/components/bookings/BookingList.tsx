@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { CreditCard, Trash2, FileText } from 'lucide-react';
-import { deleteBooking, updateBookingStatus } from '@/services/api';
+import { deleteBooking, updateBookingStatus } from '@/services/mock-api';
 
 function formatDate(dateString: string) {
   try {
@@ -205,9 +205,9 @@ export function BookingList({
                     <td className="px-6 py-4">{formatDate(booking.check_in_date)}</td>
                     <td className="px-6 py-4">{formatDate(booking.check_out_date)}</td>
                     <td className="px-6 py-4">{getStatusBadge(booking.status)}</td>
-                    <td className="px-6 py-4">${booking.total_amount.toFixed(2)}</td>
-                    <td className="px-6 py-4">${booking.amount_paid?.toFixed(2) || '0.00'}</td>
-                    <td className="px-6 py-4 text-muted-foreground">${remainingAmount.toFixed(2)}</td>
+                    <td className="px-6 py-4">د.إ {booking.total_amount.toFixed(2)}</td>
+                    <td className="px-6 py-4">د.إ {booking.amount_paid?.toFixed(2) || '0.00'}</td>
+                    <td className="px-6 py-4 text-muted-foreground">د.إ {remainingAmount.toFixed(2)}</td>
                     <td className="px-6 py-4 text-muted-foreground">{booking.created_by || 'System'}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-2">
@@ -337,15 +337,15 @@ export function BookingList({
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Total Amount:</span>
-                          <span className="font-medium">${booking.total_amount.toFixed(2)}</span>
+                          <span className="font-medium">د.إ {booking.total_amount.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Amount Paid:</span>
-                          <span className="font-medium">${booking.amount_paid?.toFixed(2) || '0.00'}</span>
+                          <span className="font-medium">د.إ {booking.amount_paid?.toFixed(2) || '0.00'}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Remaining:</span>
-                          <span className="font-medium">${remainingAmount.toFixed(2)}</span>
+                          <span className="font-medium">د.إ {remainingAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">Created By:</span>

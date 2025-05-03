@@ -1,3 +1,4 @@
+
 export type Room = {
   id: string;
   number: string;
@@ -44,10 +45,17 @@ export type Guest = {
 export type Booking = {
   id: string;
   reference: string;
+  booking_ref: string;
   room_id: string;
   guest_id: string;
+  guest_name: string;
+  guest_email: string;
+  guest_phone: string;
+  guest_document: string | null;
   check_in_date: string;
   check_out_date: string;
+  check_in: string;
+  check_out: string;
   adults: number;
   children: number;
   base_rate: number;
@@ -69,6 +77,7 @@ export type Booking = {
   rooms?: {
     number: string;
     property_id: string;
+    property_name: string;
   };
   guests?: {
     first_name: string;
@@ -76,7 +85,6 @@ export type Booking = {
     email: string;
     phone: string;
   };
-  guest_name?: string; // Computed property for convenience
 };
 
 export type User = {
@@ -107,8 +115,13 @@ export type Expense = {
   amount: number;
   date: string;
   category: string;
-  payment_method: string;
+  property: string;
+  vendor: string;
+  paymentMethod: string;
+  receipt: string | null;
   status: string;
+  owner: string;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 };

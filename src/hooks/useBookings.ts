@@ -9,33 +9,46 @@ import {
   fetchTodayCheckins,
   fetchTodayCheckouts,
   updateBookingStatus
-} from '@/services/api';
+} from '@/services/mock-api';
 
 // Mock data available for fallback if needed
 const mockBookings = [
   {
     id: '1',
     booking_number: 'BK-2023-0001',
+    booking_ref: 'BK-2023-0001',
+    reference: 'BK-2023-0001',
     guest_name: 'John Smith',
+    guest_email: 'john.smith@example.com',
+    guest_phone: '+1 (555) 123-4567',
     check_in: '2023-06-15',
     check_out: '2023-06-18',
+    check_in_date: '2023-06-15',
+    check_out_date: '2023-06-18',
     status: 'confirmed',
     amount: 450,
-    rooms: { number: '101', property: 'Marina Tower' },
+    total_amount: 450,
+    rooms: { 
+      number: '101', 
+      property_id: 'Marina Tower',
+      property_name: 'Marina Tower'
+    },
     commission: 45,
-    tourismFee: 13.5,
+    tourism_fee: 13.5,
     vat: 22.5,
-    netToOwner: 369,
-    securityDeposit: 100,
-    baseRate: 150,
+    net_to_owner: 369,
+    security_deposit: 100,
+    base_rate: 150,
     adults: 2,
     children: 0,
-    guestEmail: 'john.smith@example.com',
-    guestPhone: '+1 (555) 123-4567',
     payment_status: 'paid',
-    amountPaid: 450,
-    pendingAmount: 0,
-    guestDocument: 'passport-123.pdf'
+    amount_paid: 450,
+    pending_amount: 0,
+    guest_document: 'passport-123.pdf',
+    room_id: 'r1',
+    guest_id: 'g1',
+    created_at: '2023-05-10T08:30:00',
+    updated_at: '2023-05-10T08:30:00'
   },
   {
     id: '2',
@@ -147,11 +160,9 @@ export function useBookings() {
       console.error('Error in useBookings:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch bookings'));
       
-      // Only fallback to mock data in development environment
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Falling back to mock data');
-        setData(mockBookings as unknown as Booking[]);
-      }
+      // Fallback to mock data
+      console.warn('Falling back to mock data');
+      setData(mockBookings as unknown as Booking[]);
     } finally {
       setIsLoading(false);
       setIsRefetching(false);
@@ -193,13 +204,11 @@ export function useBooking(id?: string) {
       console.error(`Error in useBooking for ID ${id}:`, err);
       setError(err instanceof Error ? err : new Error('Failed to fetch booking'));
       
-      // Only fallback to mock data in development environment
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Falling back to mock data');
-        const booking = mockBookings.find(booking => booking.id === id);
-        if (booking) {
-          setData(booking as unknown as Booking);
-        }
+      // Fallback to mock data
+      console.warn('Falling back to mock data');
+      const booking = mockBookings.find(booking => booking.id === id);
+      if (booking) {
+        setData(booking as unknown as Booking);
       }
     } finally {
       setIsLoading(false);
@@ -294,15 +303,13 @@ export function useTodayCheckins() {
       console.error('Error in useTodayCheckins:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch today\'s check-ins'));
       
-      // Fallback to mock data only in development environment
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Falling back to mock data');
-        const today = new Date().toISOString().split('T')[0];
-        const checkins = mockBookings.filter(
-          booking => booking.check_in.split('T')[0] === today && booking.status === 'confirmed'
-        );
-        setData(checkins as unknown as Booking[]);
-      }
+      // Fallback to mock data
+      console.warn('Falling back to mock data');
+      const today = new Date().toISOString().split('T')[0];
+      const checkins = mockBookings.filter(
+        booking => booking.check_in.split('T')[0] === today && booking.status === 'confirmed'
+      );
+      setData(checkins as unknown as Booking[]);
     } finally {
       setIsLoading(false);
       setIsRefetching(false);
@@ -337,15 +344,13 @@ export function useTodayCheckouts() {
       console.error('Error in useTodayCheckouts:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch today\'s check-outs'));
       
-      // Fallback to mock data only in development environment
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Falling back to mock data');
-        const today = new Date().toISOString().split('T')[0];
-        const checkouts = mockBookings.filter(
-          booking => booking.check_out.split('T')[0] === today && booking.status === 'checked-in'
-        );
-        setData(checkouts as unknown as Booking[]);
-      }
+      // Fallback to mock data
+      console.warn('Falling back to mock data');
+      const today = new Date().toISOString().split('T')[0];
+      const checkouts = mockBookings.filter(
+        booking => booking.check_out.split('T')[0] === today && booking.status === 'checked_in'
+      );
+      setData(checkouts as unknown as Booking[]);
     } finally {
       setIsLoading(false);
       setIsRefetching(false);

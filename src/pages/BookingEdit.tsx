@@ -17,7 +17,7 @@ const BookingEdit = () => {
       // Format the booking data to match the expected structure for the form
       // Ensure all numeric fields are actually numbers
       setFormattedBookingData({
-        reference: bookingData.booking_ref || '',
+        reference: bookingData.reference || '',
         guestName: bookingData.guest_name || '',
         guestEmail: bookingData.guest_email || '',
         guestPhone: bookingData.guest_phone || '',
@@ -86,7 +86,7 @@ const BookingEdit = () => {
   
   // Only render the form when we have the formatted data
   return formattedBookingData ? (
-    <AddEditBookingForm mode="edit" bookingId={id} bookingData={formattedBookingData} />
+    <AddEditBookingForm mode="edit" bookingId={id} defaultValues={formattedBookingData} />
   ) : null;
 };
 
